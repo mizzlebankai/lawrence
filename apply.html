@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apply for Admission — Lawrence Senior High School</title>
+<meta name="description" content="Apply online for SHS or Remedial admission at Lawrence Senior High School, Sunyani.">
+
+<link rel="icon" href="assets/lawrence-logo.png">
+<link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="site-header">
+  <div class="nav-inner">
+    <a href="index.html" class="brand">
+      <img src="assets/lawrence-logo.png" alt="Lawrence Senior High School crest">
+      <span class="brand-name">Lawrence SHS<small>Sunyani</small></span>
+    </a>
+    <nav class="primary-nav">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="programs.html">Programs</a>
+      <a href="news.html">News</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="theme-switch" aria-label="Toggle color theme"><span class="theme-icon">☀</span></button>
+      <a href="apply.html" class="btn-lawrence btn-lawrence-gold d-none d-sm-inline-flex">Apply Now</a>
+      <button class="menu-toggle" aria-label="Open menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ MOBILE MENU ============ -->
+<div class="mobile-menu">
+  <button class="mobile-menu-close" aria-label="Close menu">&times;</button>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="programs.html">Programs</a>
+    <a href="news.html">News</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="contact.html">Contact</a>
+    <a href="apply.html">Apply</a>
+  </nav>
+  <div class="mobile-cta">
+    <a href="apply.html" class="btn-lawrence btn-lawrence-gold">Apply Now</a>
+    <a href="tel:+233000000000" class="btn-lawrence btn-lawrence-outline">Call the School</a>
+  </div>
+</div>
+
+<!-- ============ PAGE HERO ============ -->
+<section class="page-hero">
+  <div class="container-page">
+    <p class="eyebrow">Admissions</p>
+    <h1>Apply to Lawrence SHS.</h1>
+    <p class="mt-2" style="color: rgba(255,255,255,0.8); max-width: 55ch;">Complete the form below to start your application for SHS or Remedial intake. Our admissions team will follow up by phone or email within 3 working days.</p>
+  </div>
+</section>
+
+<!-- ============ APPLICATION FORM ============ -->
+<section class="section">
+  <div class="container-page">
+    <div class="row justify-content-center">
+      <div class="col-lg-9">
+
+        <!-- success message, hidden until submit -->
+        <div id="applySuccess" class="d-none text-center py-5 reveal is-visible">
+          <i class="bi bi-check-circle" style="font-size: 3rem; color: var(--forest);"></i>
+          <h2 class="font-display mt-3" style="font-size: 1.9rem;">Application received.</h2>
+          <p class="text-secondary mt-2" style="max-width: 50ch; margin: 0 auto;">Thank you for applying to Lawrence Senior High School. Our admissions office will contact you within 3 working days using the phone number or email you provided.</p>
+          <a href="index.html" class="btn-lawrence btn-lawrence-outline-dark mt-4">Back to Home</a>
+        </div>
+
+        <form id="admissionForm" class="needs-validation reveal is-visible" novalidate>
+
+          <!-- Student Information -->
+          <p class="eyebrow">Step 1</p>
+          <h2 class="font-display mb-4" style="font-size: 1.6rem;">Student Information</h2>
+          <div class="row g-3 mb-5">
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fName">Full Name</label>
+              <input type="text" class="form-control form-control-lawrence" id="fName" required>
+              <div class="invalid-feedback">Please enter the student's full name.</div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-lawrence" for="fDob">Date of Birth</label>
+              <input type="date" class="form-control form-control-lawrence" id="fDob" required>
+              <div class="invalid-feedback">Please enter a date of birth.</div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-lawrence" for="fGender">Gender</label>
+              <select class="form-select form-control-lawrence" id="fGender" required>
+                <option value="" selected disabled>Select</option>
+                <option>Male</option>
+                <option>Female</option>
+              </select>
+              <div class="invalid-feedback">Please select a gender.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fJHS">Previous School (JHS)</label>
+              <input type="text" class="form-control form-control-lawrence" id="fJHS" required>
+              <div class="invalid-feedback">Please enter the previous school attended.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fBECE">BECE Index Number <span class="text-secondary fw-normal">(if applicable)</span></label>
+              <input type="text" class="form-control form-control-lawrence" id="fBECE">
+            </div>
+          </div>
+
+          <!-- Program Selection -->
+          <p class="eyebrow">Step 2</p>
+          <h2 class="font-display mb-4" style="font-size: 1.6rem;">Program Selection</h2>
+          <div class="row g-3 mb-5">
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fProgram">Applying For</label>
+              <select class="form-select form-control-lawrence" id="fProgram" required>
+                <option value="" selected disabled>Select a program</option>
+                <option>SHS — General Arts</option>
+                <option>SHS — General Science</option>
+                <option>SHS — Business</option>
+                <option>SHS — Home Economics</option>
+                <option>SHS — Visual Arts</option>
+                <option>Remedial Programme</option>
+              </select>
+              <div class="invalid-feedback">Please select a program.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fResidency">Residency</label>
+              <select class="form-select form-control-lawrence" id="fResidency" required>
+                <option value="" selected disabled>Select</option>
+                <option>Boarding</option>
+                <option>Day Student</option>
+              </select>
+              <div class="invalid-feedback">Please select boarding or day.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fYear">Intake Year</label>
+              <select class="form-select form-control-lawrence" id="fYear" required>
+                <option value="" selected disabled>Select</option>
+                <option>2026</option>
+                <option>2027</option>
+              </select>
+              <div class="invalid-feedback">Please select an intake year.</div>
+            </div>
+          </div>
+
+          <!-- Parent / Guardian -->
+          <p class="eyebrow">Step 3</p>
+          <h2 class="font-display mb-4" style="font-size: 1.6rem;">Parent / Guardian Contact</h2>
+          <div class="row g-3 mb-5">
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="pName">Full Name</label>
+              <input type="text" class="form-control form-control-lawrence" id="pName" required>
+              <div class="invalid-feedback">Please enter a parent or guardian name.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="pRelation">Relationship to Student</label>
+              <input type="text" class="form-control form-control-lawrence" id="pRelation" placeholder="e.g. Mother, Father, Guardian" required>
+              <div class="invalid-feedback">Please enter the relationship.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="pPhone">Phone Number</label>
+              <input type="tel" class="form-control form-control-lawrence" id="pPhone" placeholder="e.g. 024 000 0000" required>
+              <div class="invalid-feedback">Please enter a phone number.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="pEmail">Email Address</label>
+              <input type="email" class="form-control form-control-lawrence" id="pEmail" required>
+              <div class="invalid-feedback">Please enter a valid email address.</div>
+            </div>
+            <div class="col-12">
+              <label class="form-label-lawrence" for="pAddress">Home Address</label>
+              <textarea class="form-control form-control-lawrence" id="pAddress" rows="2" required></textarea>
+              <div class="invalid-feedback">Please enter a home address.</div>
+            </div>
+          </div>
+
+          <!-- Additional Info -->
+          <p class="eyebrow">Step 4</p>
+          <h2 class="font-display mb-4" style="font-size: 1.6rem;">Anything Else We Should Know?</h2>
+          <div class="mb-4">
+            <label class="form-label-lawrence" for="fNotes">Additional Notes <span class="text-secondary fw-normal">(optional)</span></label>
+            <textarea class="form-control form-control-lawrence" id="fNotes" rows="4" placeholder="Medical conditions, special learning needs, or anything else the admissions office should know."></textarea>
+          </div>
+
+          <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" id="fConsent" required>
+            <label class="form-check-label text-secondary small" for="fConsent">
+              I confirm that the information provided is accurate to the best of my knowledge.
+            </label>
+            <div class="invalid-feedback">Please confirm before submitting.</div>
+          </div>
+
+          <div class="text-center">
+            <button type="submit" class="btn-lawrence btn-lawrence-gold">Submit Application</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="site-footer pt-5 pb-4">
+  <div class="container-page">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="brand mb-3">
+          <img src="assets/lawrence-logo.png" alt="Lawrence Senior High School crest" style="height:44px;">
+          <span class="brand-name">Lawrence SHS<small>Sunyani</small></span>
+        </div>
+        <p class="small" style="max-width: 34ch;">Honour, knowledge and integrity — educating the Bono Region's next generation of scholars and leaders.</p>
+        <div class="social-row mt-3">
+          <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+          <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+          <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+        </div>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h5>Explore</h5>
+        <ul class="list-unstyled foot-links">
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="programs.html">Programs</a></li>
+          <li><a href="news.html">News</a></li>
+          <li><a href="gallery.html">Gallery</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="apply.html">Apply</a></li>
+        </ul>
+      </div>
+      <div class="col-6 col-lg-3">
+        <h5>Contact</h5>
+        <ul class="list-unstyled foot-links">
+          <li><i class="bi bi-geo-alt me-2"></i>Sunyani, Bono Region, Ghana</li>
+          <li><i class="bi bi-telephone me-2"></i><a href="tel:+233000000000">+233 00 000 0000</a></li>
+          <li><i class="bi bi-envelope me-2"></i><a href="mailto:info@lawrenceshs.edu.gh">info@lawrenceshs.edu.gh</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-3">
+        <h5>Office Hours</h5>
+        <p class="small mb-0">Monday – Friday<br>8:00am – 4:00pm GMT</p>
+      </div>
+    </div>
+    <div class="foot-bottom text-center">&copy; 2026 Lawrence Senior High School. All rights reserved.</div>
+  </div>
+</footer>
+
+<script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
