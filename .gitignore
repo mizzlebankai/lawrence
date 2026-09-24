@@ -1,0 +1,30 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local environment
+.env
+.env.*
+
+# Logs and caches
+*.log
+npm-debug.log*
+.cache/
+
+# Build artifacts
+dist/
+build/
+
+# Optional: keep local tweaks out of git
+_local/
+_notes/
+
+# If you later add assets folders with raw originals, exclude them selectively if needed
+# assets/raw/
+# assets/uncompressed/
