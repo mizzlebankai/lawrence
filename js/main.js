@@ -2,30 +2,8 @@
 document.addEventListener('DOMContentLoaded', function () {
 
   var body = document.body;
-  var themeToggle = document.querySelector('.theme-switch');
   var header = document.querySelector('.site-header');
   var isHeroPage = body.classList.contains('has-hero');
-
-  function applyTheme(theme) {
-    if (!theme) {
-      theme = localStorage.getItem('lawrence-theme') || 'dark';
-    }
-    body.setAttribute('data-theme', theme);
-    localStorage.setItem('lawrence-theme', theme);
-    if (themeToggle) {
-      var icon = themeToggle.querySelector('.theme-icon');
-      if (icon) icon.textContent = theme === 'dark' ? '☀' : '☾';
-    }
-  }
-
-  applyTheme();
-
-  if (themeToggle) {
-    themeToggle.addEventListener('click', function () {
-      var currentTheme = body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-      applyTheme(currentTheme);
-    });
-  }
 
   function updateHeaderState() {
     if (!header) return;
@@ -40,50 +18,66 @@ document.addEventListener('DOMContentLoaded', function () {
   var closeBtn = document.querySelector('.mobile-menu-close');
   var mobileMenu = document.querySelector('.mobile-menu');
 
-  function openMenu() {
-    if (!mobileMenu) return;
-    mobileMenu.classList.add('is-open');
-    body.classList.add('menu-open');
-  }
-  function closeMenu() {
-    if (!mobileMenu) return;
-    mobileMenu.classList.remove('is-open');
-    body.classList.remove('menu-open');
-  }
-  if (toggleBtn) toggleBtn.addEventListener('click', function () {
-    openMenu();
-    if (toggleBtn.querySelectorAll('span').length) {
-      toggleBtn.querySelectorAll('span').forEach(function (span, index) {
+  function setMenuIconState(open) {
+    if (!toggleBtn || !toggleBtn.querySelectorAll('span').length) return;
+    var spans = toggleBtn.querySelectorAll('span');
+    spans.forEach(function (span, index) {
+      if (open) {
         if (index === 0) span.style.transform = 'translateY(7px) rotate(45deg)';
         if (index === 1) span.style.opacity = '0';
         if (index === 2) span.style.transform = 'translateY(-7px) rotate(-45deg)';
-      });
-    }
-  });
-  if (closeBtn) closeBtn.addEventListener('click', function () {
-    closeMenu();
-    if (toggleBtn && toggleBtn.querySelectorAll('span').length) {
-      toggleBtn.querySelectorAll('span').forEach(function (span) {
+      } else {
         span.style.transform = 'none';
         span.style.opacity = '1';
-      });
+      }
+    });
+  }
+
+  function openMenu() {
+    if (!mobileMenu) return;
+    if (mobileMenu.tagName === 'DIALOG') {
+      if (!mobileMenu.open) mobileMenu.showModal();
+    } else {
+      mobileMenu.classList.add('is-open');
     }
+    body.classList.add('menu-open');
+  }
+
+  function closeMenu() {
+    if (!mobileMenu) return;
+    if (mobileMenu.tagName === 'DIALOG') {
+      if (mobileMenu.open) mobileMenu.close();
+    } else {
+      mobileMenu.classList.remove('is-open');
+    }
+    body.classList.remove('menu-open');
+  }
+
+  if (toggleBtn) toggleBtn.addEventListener('click', function () {
+    if (mobileMenu && mobileMenu.tagName === 'DIALOG' && mobileMenu.open) {
+      closeMenu();
+      setMenuIconState(false);
+      return;
+    }
+    openMenu();
+    setMenuIconState(true);
   });
+
+  if (closeBtn) closeBtn.addEventListener('click', function () {
+    closeMenu();
+    setMenuIconState(false);
+  });
+
   if (mobileMenu) {
     mobileMenu.querySelectorAll('a').forEach(function (a) {
       a.addEventListener('click', function () {
         closeMenu();
-        if (toggleBtn && toggleBtn.querySelectorAll('span').length) {
-          toggleBtn.querySelectorAll('span').forEach(function (span) {
-            span.style.transform = 'none';
-            span.style.opacity = '1';
-          });
-        }
+        setMenuIconState(false);
       });
     });
   }
 
-  var revealEls = document.querySelectorAll('.reveal');
+  var revealEls = document.querySelectorAll('.reveal, [data-fade], [data-fade-stagger]');
   if ('IntersectionObserver' in window && revealEls.length) {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -93,7 +87,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       });
     }, { threshold: 0.15 });
-    revealEls.forEach(function (el) { io.observe(el); });
+    revealEls.forEach(function (el, index) {
+      el.style.transitionDelay = (index * 80) + 'ms';
+      io.observe(el);
+    });
   } else {
     revealEls.forEach(function (el) { el.classList.add('is-visible'); });
   }
