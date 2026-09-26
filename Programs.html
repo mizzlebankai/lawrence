@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Programs — Lawrence College &amp; SHS</title>
-<meta name="description" content="Explore college pathways, Senior High School tracks and remedial support at Lawrence College &amp; SHS in Sunyani.">
+<meta name="description" content="Explore college pathways, WASSCE Remedial support, and Senior High School tracks at Lawrence College &amp; SHS in Sunyani.">
 
 <link rel="icon" href="assets/lawrence-logo.png">
 <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
@@ -17,10 +17,16 @@
 <header class="site-header">
   <div class="nav-inner">
     <a href="index.html" class="brand">
-      <img src="assets/lawrence-logo.png" alt="Lawrence College and SHS crest">
+      <span class="brand-crest"><img src="assets/lawrence-logo.png" alt="Lawrence College and SHS crest"></span>
       <span class="brand-name">Lawrence<small>College &amp; SHS</small></span>
     </a>
+    <div class="header-utility">
+      <span>Sunyani, Ghana</span>
+    </div>
     <nav class="primary-nav">
+      <a href="index.html" class="compact-brand" aria-label="Lawrence College home">
+        <span class="brand-crest"><img src="assets/lawrence-logo.png" alt=""></span>
+      </a>
       <a href="index.html">Home</a>
       <a href="college.html">College</a>
       <a href="about.html">About</a>
@@ -30,7 +36,6 @@
       <a href="contact.html">Contact</a>
     </nav>
     <div class="nav-actions">
-      <a href="apply.html" class="btn-lawrence btn-lawrence-gold d-none d-sm-inline-flex">Apply Now</a>
       <button class="menu-toggle" aria-label="Open menu"><span></span><span></span><span></span></button>
     </div>
   </div>
@@ -51,13 +56,14 @@
   </nav>
   <div class="mobile-cta">
     <a href="apply.html" class="btn-lawrence btn-lawrence-gold">Apply Now</a>
-    <a href="tel:+233000000000" class="btn-lawrence btn-lawrence-outline">Call the School</a>
+    <a href="tel:+233257933174" class="btn-lawrence btn-lawrence-outline">Call the School</a>
   </div>
 </div>
 
 <!-- ============ PAGE HERO ============ -->
-<section class="page-hero">
-  <div class="container-page">
+<section class="page-hero page-hero-campus">
+  <div class="hero-backdrop hero-backdrop--inner" aria-hidden="true"></div>
+  <div class="container-page hero-reveal-content">
     <p class="eyebrow">Programs at Lawrence</p>
     <h1>Practical pathways for school, skills and a fresh start.</h1>
     <div class="d-flex flex-wrap gap-3 mt-4">
@@ -91,12 +97,36 @@
       <div class="col-md-6 col-lg-4 reveal">
         <article class="pathway-card h-100">
           <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
-          <h3>Remedial Support</h3>
+          <h3>WASSCE Remedial</h3>
           <p class="text-secondary small mb-0">Strengthen subject knowledge and prepare for another attempt at the exams that matter to you.</p>
         </article>
       </div>
     </div>
     <a href="college.html" class="btn-lawrence btn-lawrence-outline-dark mt-4">Explore Lawrence College</a>
+  </div>
+</section>
+
+<section class="section bg-white">
+  <div class="container-page">
+    <div class="row g-5 align-items-center">
+      <div class="col-lg-6 reveal">
+        <p class="eyebrow">WASSCE Remedial</p>
+        <h2 class="font-display" style="font-size: clamp(1.7rem, 3vw, 2.3rem);">A second attempt, taken seriously.</h2>
+        <p class="text-secondary mt-2">Students who did not achieve the WASSCE grades they need — for university, nursing training, teacher training or other tertiary pathways — join WASSCE Remedial to focus specifically on the subjects holding them back.</p>
+        <ul class="text-secondary mt-3" style="line-height: 2;">
+          <li>Small class sizes, subject-focused teaching</li>
+          <li>Past-questions drilling and timed mock exams</li>
+          <li>Options to re-sit core and elective subjects independently</li>
+          <li>Both day and boarding options available</li>
+        </ul>
+      </div>
+      <div class="col-lg-6 reveal">
+        <div class="quote-block">
+          <p class="quote-text">"WASSCE Remedial isn't a step back — it's the most deliberate year some of our students will ever have."</p>
+          <p class="mt-3 mb-0 fw-semibold" style="color: var(--maroon);">A. B. John — Director</p>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -143,96 +173,91 @@
           <p class="text-secondary small">Graphic Design, Picture Making, Sculpture and Textiles — for students pursuing creative and design careers.</p>
         </div>
       </div>
-      <div class="col-md-6 col-lg-4 reveal">
-        <div class="pathway-card h-100" style="border-color: var(--gold);">
-          <i class="bi bi-arrow-repeat" style="color: var(--forest);"></i>
-          <h3>Remedial Programme</h3>
-          <p class="text-secondary small">A focused, one-year track for students re-sitting WASSCE core or elective subjects, taught in small groups.</p>
-        </div>
-      </div>
     </div>
   </div>
 </section>
 
 <!-- ============ REMEDIAL DETAIL ============ -->
-<section class="section bg-white">
+<section class="section banner-cta">
   <div class="container-page">
-    <div class="row g-5 align-items-center">
-      <div class="col-lg-6 reveal">
-        <p class="eyebrow">Remedial Programme</p>
-        <h2 class="font-display" style="font-size: clamp(1.7rem, 3vw, 2.3rem);">A second attempt, taken seriously.</h2>
-        <p class="text-secondary mt-2">Students who did not achieve the WASSCE grades they need — for university, nursing training, teacher training or other tertiary pathways — join our Remedial programme to focus specifically on the subjects holding them back.</p>
-        <ul class="text-secondary mt-3" style="line-height: 2;">
-          <li>Small class sizes, subject-focused teaching</li>
-          <li>Past-questions drilling and timed mock exams</li>
-          <li>Options to re-sit core and elective subjects independently</li>
-          <li>Both day and boarding options available</li>
-        </ul>
+    <div class="cta-panel reveal">
+      <div>
+        <p class="eyebrow">Admissions</p>
+        <h2 class="font-display">Ready to take the next step?</h2>
       </div>
-      <div class="col-lg-6 reveal">
-        <div class="quote-block">
-          <p class="quote-text">"The Remedial track isn't a step back — it's the most deliberate year some of our students will ever have."</p>
-          <p class="mt-3 mb-0 fw-semibold" style="color: var(--maroon);">Dr. Berko — Headmaster</p>
-        </div>
+      <div class="cta-actions">
+        <a href="apply.html" class="btn-lawrence btn-lawrence-gold">Apply Now</a>
+        <a href="Contact.html" class="btn-lawrence btn-lawrence-outline-dark">Speak to Admissions</a>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ============ CTA ============ -->
-<section class="section" style="background: var(--forest-dark);">
-  <div class="container-page text-center text-white reveal">
-    <h2 class="font-display text-white" style="font-size: clamp(1.9rem, 4vw, 2.6rem);">Ready to find your next step?</h2>
-    <p class="mt-2" style="color: rgba(255,255,255,0.8);">Explore Lawrence College pathways or apply to Lawrence College &amp; SHS.</p>
-    <div class="d-flex flex-wrap justify-content-center gap-3 mt-3">
-      <a href="apply.html" class="btn-lawrence btn-lawrence-gold">Apply Now</a>
-      <a href="college.html" class="btn-lawrence btn-lawrence-outline">Explore College</a>
+<!-- ============ FOOTER ============ -->
+<footer class="site-footer">
+  <div class="footer-main">
+    <div class="container-page footer-layout">
+      <div class="footer-primary">
+        <div class="footer-identity">
+          <a href="index.html" class="footer-brand">
+            <img src="assets/lawrence-logo.png" alt="Lawrence College and SHS crest">
+            <span class="brand-name">Lawrence<small>College &amp; SHS</small></span>
+          </a>
+          <p class="footer-intro">Building confident learners and future-ready citizens through practical education, discipline and care.</p>
+          <address class="footer-contact">
+            <span><i class="bi bi-geo-alt" aria-hidden="true"></i>Sunyani, Bono Region, Ghana</span>
+            <a href="https://wa.me/233257933174" target="_blank" rel="noopener noreferrer" aria-label="Message Lawrence on WhatsApp at +233 25 793 3174"><i class="bi bi-whatsapp" aria-hidden="true"></i>+233 25 793 3174</a>
+          </address>
+        </div>
+        <nav class="footer-actions" aria-label="Admissions actions">
+          <a class="footer-action" href="apply.html">Apply</a>
+          <a class="footer-action" href="Contact.html">Visit Campus</a>
+          <a class="footer-action" href="Contact.html">Contact Admissions</a>
+        </nav>
+      </div>
+      <div class="footer-links">
+        <div>
+          <h2>Explore</h2>
+          <ul class="footer-link-list">
+            <li><a href="college.html">College</a></li>
+            <li><a href="Programs.html">SHS Programs</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="news.html">News &amp; Events</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Admissions</h2>
+          <ul class="footer-link-list">
+            <li><a href="apply.html">How to Apply</a></li>
+            <li><a href="Programs.html">Programs</a></li>
+            <li><a href="Contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Office Hours</h2>
+          <p class="footer-hours">Monday – Friday<br>8:00am – 4:00pm GMT</p>
+        </div>
+        <div>
+          <h2>Connect</h2>
+          <p class="footer-social-label">Follow Lawrence</p>
+          <div class="social-row">
+            <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+            <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+            <a href="#" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
+            <a href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-</section>
-
-<!-- ============ FOOTER ============ -->
-<footer class="site-footer pt-5 pb-4">
-  <div class="container-page">
-    <div class="row g-4">
-      <div class="col-lg-4">
-        <div class="brand mb-3">
-          <img src="assets/lawrence-logo.png" alt="Lawrence College and SHS crest" style="height:44px;">
-          <span class="brand-name">Lawrence<small>College &amp; SHS</small></span>
-        </div>
-        <p class="small" style="max-width: 34ch;">Building confident learners and future-ready citizens through practical education, discipline and care.</p>
-        <div class="social-row mt-3">
-          <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-          <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-          <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
-        </div>
-      </div>
-      <div class="col-6 col-lg-2">
-        <h5>Explore</h5>
-        <ul class="list-unstyled foot-links">
-          <li><a href="college.html">College</a></li>
-          <li><a href="about.html">About Us</a></li>
-          <li><a href="programs.html">Programs</a></li>
-          <li><a href="news.html">News</a></li>
-          <li><a href="gallery.html">Gallery</a></li>
-          <li><a href="contact.html">Contact</a></li>
-          <li><a href="apply.html">Apply</a></li>
-        </ul>
-      </div>
-      <div class="col-6 col-lg-3">
-        <h5>Contact</h5>
-        <ul class="list-unstyled foot-links">
-          <li><i class="bi bi-geo-alt me-2"></i>Sunyani, Bono Region, Ghana</li>
-          <li><i class="bi bi-telephone me-2"></i><a href="tel:+233000000000">+233 00 000 0000</a></li>
-          <li><i class="bi bi-envelope me-2"></i><a href="mailto:info@lawrenceshs.edu.gh">info@lawrenceshs.edu.gh</a></li>
-        </ul>
-      </div>
-      <div class="col-lg-3">
-        <h5>Office Hours</h5>
-        <p class="small mb-0">Monday – Friday<br>8:00am – 4:00pm GMT</p>
-      </div>
+  <div class="footer-bottom">
+    <div class="container-page footer-bottom-inner">
+      <span>&copy; 2026 Lawrence College &amp; SHS. All rights reserved.</span>
+      <span>Honour · Knowledge · Integrity</span>
+      <a href="https://wa.me/233257933174" target="_blank" rel="noopener noreferrer" aria-label="Contact Apex Labs on WhatsApp">Built by Apex Labs</a>
     </div>
-    <div class="foot-bottom text-center">&copy; 2026 Lawrence College &amp; SHS. All rights reserved.</div>
   </div>
 </footer>
 

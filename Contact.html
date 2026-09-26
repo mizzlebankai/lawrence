@@ -17,10 +17,16 @@
 <header class="site-header">
   <div class="nav-inner">
     <a href="index.html" class="brand">
-      <img src="assets/lawrence-logo.png" alt="Lawrence Senior High School crest">
-      <span class="brand-name">Lawrence SHS<small>Sunyani</small></span>
+      <span class="brand-crest"><img src="assets/lawrence-logo.png" alt="Lawrence Senior High School crest"></span>
+      <span class="brand-name">Lawrence<small>College &amp; SHS</small></span>
     </a>
+    <div class="header-utility">
+      <span>Sunyani, Ghana</span>
+    </div>
     <nav class="primary-nav">
+      <a href="index.html" class="compact-brand" aria-label="Lawrence College home">
+        <span class="brand-crest"><img src="assets/lawrence-logo.png" alt=""></span>
+      </a>
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
       <a href="programs.html">Programs</a>
@@ -29,7 +35,6 @@
       <a href="contact.html" class="is-active">Contact</a>
     </nav>
     <div class="nav-actions">
-      <a href="apply.html" class="btn-lawrence btn-lawrence-gold d-none d-sm-inline-flex">Apply Now</a>
       <button class="menu-toggle" aria-label="Open menu"><span></span><span></span><span></span></button>
     </div>
   </div>
@@ -49,13 +54,14 @@
   </nav>
   <div class="mobile-cta">
     <a href="apply.html" class="btn-lawrence btn-lawrence-gold">Apply Now</a>
-    <a href="tel:+233000000000" class="btn-lawrence btn-lawrence-outline">Call the School</a>
+    <a href="tel:+233257933174" class="btn-lawrence btn-lawrence-outline">Call the School</a>
   </div>
 </div>
 
 <!-- ============ PAGE HERO ============ -->
-<section class="page-hero">
-  <div class="container-page">
+<section class="page-hero page-hero-campus">
+  <div class="hero-backdrop hero-backdrop--inner" aria-hidden="true"></div>
+  <div class="container-page hero-reveal-content">
     <p class="eyebrow">Contact</p>
     <h1>Come find us in Sunyani.</h1>
   </div>
@@ -81,7 +87,7 @@
           <i class="bi bi-telephone fs-4" style="color: var(--maroon);"></i>
           <div>
             <h5 class="mb-1" style="color: var(--forest-dark);">Phone</h5>
-            <p class="text-secondary mb-0"><a href="tel:+233000000000">+233 00 000 0000</a></p>
+            <p class="text-secondary mb-0"><a href="https://wa.me/233257933174" target="_blank" rel="noopener noreferrer" aria-label="Message Lawrence on WhatsApp at +233 25 793 3174">+233 25 793 3174</a></p>
           </div>
         </div>
 
@@ -167,46 +173,69 @@
 </section>
 
 <!-- ============ FOOTER ============ -->
-<footer class="site-footer pt-5 pb-4">
-  <div class="container-page">
-    <div class="row g-4">
-      <div class="col-lg-4">
-        <div class="brand mb-3">
-          <img src="assets/lawrence-logo.png" alt="Lawrence Senior High School crest" style="height:44px;">
-          <span class="brand-name">Lawrence SHS<small>Sunyani</small></span>
+<footer class="site-footer">
+  <div class="footer-main">
+    <div class="container-page footer-layout">
+      <div class="footer-primary">
+        <div class="footer-identity">
+          <a href="index.html" class="footer-brand">
+            <img src="assets/lawrence-logo.png" alt="Lawrence College and SHS crest">
+            <span class="brand-name">Lawrence<small>College &amp; SHS</small></span>
+          </a>
+          <p class="footer-intro">Building confident learners and future-ready citizens through practical education, discipline and care.</p>
+          <address class="footer-contact">
+            <span><i class="bi bi-geo-alt" aria-hidden="true"></i>Sunyani, Bono Region, Ghana</span>
+            <a href="https://wa.me/233257933174" target="_blank" rel="noopener noreferrer" aria-label="Message Lawrence on WhatsApp at +233 25 793 3174"><i class="bi bi-whatsapp" aria-hidden="true"></i>+233 25 793 3174</a>
+          </address>
         </div>
-        <p class="small" style="max-width: 34ch;">Honour, knowledge and integrity — educating the Bono Region's next generation of scholars and leaders.</p>
-        <div class="social-row mt-3">
-          <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-          <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-          <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+        <nav class="footer-actions" aria-label="Admissions actions">
+          <a class="footer-action" href="apply.html">Apply</a>
+          <a class="footer-action" href="Contact.html">Visit Campus</a>
+          <a class="footer-action" href="Contact.html">Contact Admissions</a>
+        </nav>
+      </div>
+      <div class="footer-links">
+        <div>
+          <h2>Explore</h2>
+          <ul class="footer-link-list">
+            <li><a href="college.html">College</a></li>
+            <li><a href="Programs.html">SHS Programs</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="news.html">News &amp; Events</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+          </ul>
         </div>
-      </div>
-      <div class="col-6 col-lg-2">
-        <h5>Explore</h5>
-        <ul class="list-unstyled foot-links">
-          <li><a href="about.html">About Us</a></li>
-          <li><a href="programs.html">Programs</a></li>
-          <li><a href="news.html">News</a></li>
-          <li><a href="gallery.html">Gallery</a></li>
-          <li><a href="contact.html">Contact</a></li>
-          <li><a href="apply.html">Apply</a></li>
-        </ul>
-      </div>
-      <div class="col-6 col-lg-3">
-        <h5>Contact</h5>
-        <ul class="list-unstyled foot-links">
-          <li><i class="bi bi-geo-alt me-2"></i>Sunyani, Bono Region, Ghana</li>
-          <li><i class="bi bi-telephone me-2"></i><a href="tel:+233000000000">+233 00 000 0000</a></li>
-          <li><i class="bi bi-envelope me-2"></i><a href="mailto:info@lawrenceshs.edu.gh">info@lawrenceshs.edu.gh</a></li>
-        </ul>
-      </div>
-      <div class="col-lg-3">
-        <h5>Office Hours</h5>
-        <p class="small mb-0">Monday – Friday<br>8:00am – 4:00pm GMT</p>
+        <div>
+          <h2>Admissions</h2>
+          <ul class="footer-link-list">
+            <li><a href="apply.html">How to Apply</a></li>
+            <li><a href="Programs.html">Programs</a></li>
+            <li><a href="Contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Office Hours</h2>
+          <p class="footer-hours">Monday – Friday<br>8:00am – 4:00pm GMT</p>
+        </div>
+        <div>
+          <h2>Connect</h2>
+          <p class="footer-social-label">Follow Lawrence</p>
+          <div class="social-row">
+            <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+            <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+            <a href="#" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
+            <a href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="foot-bottom text-center">&copy; 2026 Lawrence Senior High School. All rights reserved.</div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container-page footer-bottom-inner">
+      <span>&copy; 2026 Lawrence College &amp; SHS. All rights reserved.</span>
+      <span>Honour · Knowledge · Integrity</span>
+      <a href="https://wa.me/233257933174" target="_blank" rel="noopener noreferrer" aria-label="Contact Apex Labs on WhatsApp">Built by Apex Labs</a>
+    </div>
   </div>
 </footer>
 

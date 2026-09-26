@@ -16,11 +16,17 @@
 <header class="site-header">
   <div class="nav-inner">
     <a href="index.html" class="brand">
-      <img src="assets/lawrence-logo.png" alt="Lawrence Senior High School crest">
-      <span class="brand-name">Lawrence SHS<small>Sunyani</small></span>
+      <span class="brand-crest"><img src="assets/lawrence-logo.png" alt="Lawrence Senior High School crest"></span>
+      <span class="brand-name">Lawrence<small>College &amp; SHS</small></span>
     </a>
+    <div class="header-utility">
+      <span>Sunyani, Ghana</span>
+    </div>
 
     <nav class="primary-nav">
+      <a href="index.html" class="compact-brand" aria-label="Lawrence College home">
+        <span class="brand-crest"><img src="assets/lawrence-logo.png" alt=""></span>
+      </a>
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
       <a href="programs.html">Programs</a>
@@ -30,7 +36,6 @@
     </nav>
 
     <div class="nav-actions">
-      <a href="apply.html" class="btn-lawrence btn-lawrence-gold d-none d-sm-inline-flex">Apply Now</a>
       <button class="menu-toggle" aria-label="Open menu">
         <span></span><span></span><span></span>
       </button>
@@ -51,12 +56,13 @@
   </nav>
   <div class="mobile-cta">
     <a href="apply.html" class="btn-lawrence btn-lawrence-gold">Apply Now</a>
-    <a href="tel:+233000000000" class="btn-lawrence btn-lawrence-outline">Call the School</a>
+    <a href="tel:+233257933174" class="btn-lawrence btn-lawrence-outline">Call the School</a>
   </div>
 </div>
 
 <section class="page-hero">
-  <div class="container-page">
+  <div class="hero-backdrop hero-backdrop--inner" aria-hidden="true"></div>
+  <div class="container-page hero-reveal-content">
     <p class="eyebrow">News & Events</p>
     <h1>Latest updates from campus life and community achievements.</h1>
   </div>
@@ -71,7 +77,7 @@
       <div class="news-feature-body">
         <div class="date">12 August 2025</div>
         <h3>Lawrence SHS opens admissions for the new academic year.</h3>
-        <p class="mb-0 text-secondary">Families are invited to apply for placement in our SHS and Remedial tracks. The admissions team is ready to support students and parents through the application process.</p>
+        <p class="mb-0 text-secondary">Families are invited to apply for SHS placement or WASSCE Remedial at Lawrence College. The admissions team is ready to support students and parents through the application process.</p>
       </div>
     </div>
   </div>
@@ -134,11 +140,11 @@
 
       <article class="news-card reveal">
         <div class="news-card-media">
-          <img src="assets/hero.png" alt="Remedial students celebration image placeholder">
+          <img src="assets/hero.png" alt="WASSCE Remedial students celebration image placeholder">
         </div>
         <div class="body">
           <div class="date">22 November</div>
-          <h4>Remedial students celebrate academic progress</h4>
+          <h4>WASSCE Remedial students celebrate academic progress</h4>
           <p class="text-secondary mb-0">The school recognised students who showed persistence, discipline and excellent improvement in core subjects.</p>
         </div>
       </article>
@@ -158,51 +164,67 @@
 </section>
 
 <footer class="site-footer">
-  <div class="container-page py-5">
-    <div class="row g-4">
-      <div class="col-lg-4 reveal">
-        <a href="index.html" class="brand mb-3 d-inline-flex">
-          <img src="assets/lawrence-logo.png" alt="Lawrence Senior High School crest">
-          <span class="brand-name">Lawrence SHS<small>Sunyani</small></span>
-        </a>
-        <p class="text-secondary mb-0">Discipline, excellence and purpose-driven learning for students in Sunyani and beyond.</p>
+  <div class="footer-main">
+    <div class="container-page footer-layout">
+      <div class="footer-primary">
+        <div class="footer-identity">
+          <a href="index.html" class="footer-brand">
+            <img src="assets/lawrence-logo.png" alt="Lawrence College and SHS crest">
+            <span class="brand-name">Lawrence<small>College &amp; SHS</small></span>
+          </a>
+          <p class="footer-intro">Building confident learners and future-ready citizens through practical education, discipline and care.</p>
+          <address class="footer-contact">
+            <span><i class="bi bi-geo-alt" aria-hidden="true"></i>Sunyani, Bono Region, Ghana</span>
+            <a href="https://wa.me/233257933174" target="_blank" rel="noopener noreferrer" aria-label="Message Lawrence on WhatsApp at +233 25 793 3174"><i class="bi bi-whatsapp" aria-hidden="true"></i>+233 25 793 3174</a>
+          </address>
+        </div>
+        <nav class="footer-actions" aria-label="Admissions actions">
+          <a class="footer-action" href="apply.html">Apply</a>
+          <a class="footer-action" href="Contact.html">Visit Campus</a>
+          <a class="footer-action" href="Contact.html">Contact Admissions</a>
+        </nav>
       </div>
-
-      <div class="col-md-4 col-lg-2 reveal">
-        <h5>Quick Links</h5>
-        <ul class="list-unstyled foot-links">
-          <li><a href="about.html">About Us</a></li>
-          <li><a href="programs.html">Programs</a></li>
-          <li><a href="news.html">News</a></li>
-          <li><a href="gallery.html">Gallery</a></li>
-        </ul>
-      </div>
-
-      <div class="col-md-4 col-lg-3 reveal">
-        <h5>Admissions</h5>
-        <ul class="list-unstyled foot-links">
-          <li><a href="apply.html">Apply</a></li>
-          <li><a href="contact.html">Visit Campus</a></li>
-          <li><a href="tel:+233000000000">Call School</a></li>
-          <li><a href="mailto:info@lawrenceshs.edu.gh">Email Us</a></li>
-        </ul>
-      </div>
-
-      <div class="col-md-4 col-lg-3 reveal">
-        <h5>Connect</h5>
-        <div class="social-row mt-2">
-          <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-          <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-          <a href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+      <div class="footer-links">
+        <div>
+          <h2>Explore</h2>
+          <ul class="footer-link-list">
+            <li><a href="college.html">College</a></li>
+            <li><a href="Programs.html">SHS Programs</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="news.html">News &amp; Events</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Admissions</h2>
+          <ul class="footer-link-list">
+            <li><a href="apply.html">How to Apply</a></li>
+            <li><a href="Programs.html">Programs</a></li>
+            <li><a href="Contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>Office Hours</h2>
+          <p class="footer-hours">Monday ? Friday<br>8:00am ? 4:00pm GMT</p>
+        </div>
+        <div>
+          <h2>Connect</h2>
+          <p class="footer-social-label">Follow Lawrence</p>
+          <div class="social-row">
+            <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+            <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+            <a href="#" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
+            <a href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+          </div>
         </div>
       </div>
     </div>
-
-    <div class="foot-bottom mt-4 pt-4 text-center text-md-start">
-      <div class="row align-items-center">
-        <div class="col-md-6">© 2025 Lawrence Senior High School, Sunyani</div>
-        <div class="col-md-6 text-md-end mt-2 mt-md-0">Built for academic excellence.</div>
-      </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container-page footer-bottom-inner">
+      <span>&copy; 2026 Lawrence College &amp; SHS. All rights reserved.</span>
+      <span>Honour ? Knowledge ? Integrity</span>
+      <a href="https://wa.me/233257933174" target="_blank" rel="noopener noreferrer" aria-label="Contact Apex Labs on WhatsApp">Built by Apex Labs</a>
     </div>
   </div>
 </footer>
