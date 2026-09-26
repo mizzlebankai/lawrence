@@ -1,4 +1,3 @@
-/* Lawrence Senior High School — shared site behavior */
 document.addEventListener('DOMContentLoaded', function () {
 
   var body = document.body;
