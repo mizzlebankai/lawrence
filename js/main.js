@@ -4,21 +4,51 @@ document.addEventListener('DOMContentLoaded', function () {
   var body = document.body;
   var header = document.querySelector('.site-header');
   var isHeroPage = body.classList.contains('has-hero');
+  var compactHeader = null;
+  var scrolledHeader = null;
+  var headerUpdatePending = false;
 
   function updateHeaderState() {
     if (!header) return;
-    if (!isHeroPage) { header.classList.add('is-solid'); return; }
-    if (window.scrollY > 60) header.classList.add('is-scrolled');
-    else header.classList.remove('is-scrolled');
+    var scrollY = window.scrollY;
+    var shouldCompact = scrollY > 100;
+    var shouldBeScrolled = isHeroPage && scrollY > 60;
+
+    if (shouldCompact !== compactHeader) {
+      header.classList.toggle('is-compact', shouldCompact);
+      compactHeader = shouldCompact;
+    }
+    if (shouldBeScrolled !== scrolledHeader) {
+      header.classList.toggle('is-scrolled', shouldBeScrolled);
+      scrolledHeader = shouldBeScrolled;
+    }
+    if (!isHeroPage && !header.classList.contains('is-solid')) {
+      header.classList.add('is-solid');
+    }
+  }
+
+  function scheduleHeaderUpdate() {
+    if (headerUpdatePending) return;
+    headerUpdatePending = true;
+    window.requestAnimationFrame(function () {
+      updateHeaderState();
+      headerUpdatePending = false;
+    });
   }
   updateHeaderState();
-  window.addEventListener('scroll', updateHeaderState, { passive: true });
+  window.addEventListener('scroll', scheduleHeaderUpdate, { passive: true });
 
   var toggleBtn = document.querySelector('.menu-toggle');
   var closeBtn = document.querySelector('.mobile-menu-close');
   var mobileMenu = document.querySelector('.mobile-menu');
 
+  if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+
   function setMenuIconState(open) {
+    if (toggleBtn) {
+      toggleBtn.setAttribute('aria-expanded', String(open));
+      toggleBtn.setAttribute('aria-label', open ? 'Close full menu' : 'Open full menu');
+    }
     if (!toggleBtn || !toggleBtn.querySelectorAll('span').length) return;
     var spans = toggleBtn.querySelectorAll('span');
     spans.forEach(function (span, index) {
@@ -78,7 +108,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   var revealEls = document.querySelectorAll('.reveal, [data-fade], [data-fade-stagger]');
-  if ('IntersectionObserver' in window && revealEls.length) {
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) {
+    revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+  } else if ('IntersectionObserver' in window && revealEls.length) {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting) {
@@ -86,9 +119,8 @@ document.addEventListener('DOMContentLoaded', function () {
           io.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.15 });
-    revealEls.forEach(function (el, index) {
-      el.style.transitionDelay = (index * 80) + 'ms';
+    }, { threshold: 0.05, rootMargin: '0px 0px 80px 0px' });
+    revealEls.forEach(function (el) {
       io.observe(el);
     });
   } else {
@@ -103,8 +135,14 @@ document.addEventListener('DOMContentLoaded', function () {
         var el = entry.target;
         var target = parseFloat(el.getAttribute('data-count-to'));
         var decimals = (el.getAttribute('data-count-to').split('.')[1] || '').length;
-        var duration = 1400;
+        var duration = reduceMotion ? 0 : 850;
         var start = null;
+
+        if (duration === 0) {
+          el.textContent = target.toFixed(decimals);
+          counterIO.unobserve(el);
+          return;
+        }
 
         function step(ts) {
           if (!start) start = ts;
