@@ -2826,6 +2826,16 @@ section.section:not(.bg-white):not(.banner-cta):not(.news-showcase):not(.home-in
   color: var(--white);
 }
 
+.leader-portrait > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  border: 0.45rem solid var(--white);
+  object-fit: cover;
+}
+
 .leader-portrait--initials > span:first-child {
   display: grid;
   width: 7rem;
