@@ -1,3 +1,8 @@
+/* ==========================================================================
+  Lawrence Senior High School — core stylesheet
+  Loaded AFTER vendor/bootstrap/css/bootstrap.min.css
+  ========================================================================== */
+
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 :root {
@@ -2040,6 +2045,41 @@ body[data-theme="dark"] .section.bg-white .btn-lawrence-outline-dark {
   border-top: 4px solid var(--navy-900);
 }
 
+.newsletter-section {
+  background: var(--navy-900);
+  color: #fff;
+  padding: clamp(3rem, 6vw, 5rem) 0;
+}
+
+.newsletter-layout {
+  display: grid;
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  align-items: center;
+}
+
+.newsletter-copy .eyebrow { color: var(--gold-400); }
+.newsletter-copy h2 { max-width: 16ch; color: #fff; font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.6rem); }
+.newsletter-copy p:last-child { max-width: 42ch; color: rgba(255,255,255,.76); margin-bottom: 0; }
+.newsletter-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; }
+.newsletter-fields label { display: block; color: #fff; font-size: .82rem; font-weight: 700; }
+.newsletter-fields label span { color: rgba(255,255,255,.65); font-weight: 400; }
+.newsletter-fields .form-control,
+.newsletter-fields .form-select { margin-top: .4rem; min-height: 46px; border-radius: 2px; }
+.newsletter-email { grid-column: 1 / -1; }
+.newsletter-consent { display: flex; align-items: flex-start; gap: .65rem; margin: 1rem 0; color: rgba(255,255,255,.8); font-size: .8rem; }
+.newsletter-consent input { flex: 0 0 auto; width: 1rem; height: 1rem; margin-top: .15rem; accent-color: var(--gold-400); }
+.newsletter-submit-row { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
+#newsletterStatus { color: #fff; font-size: .88rem; }
+#newsletterStatus.is-error { color: #ffc2c9; }
+.newsletter-honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+@media (max-width: 767px) {
+  .newsletter-layout { grid-template-columns: 1fr; gap: 1.5rem; }
+  .newsletter-fields { grid-template-columns: 1fr; }
+  .newsletter-email { grid-column: auto; }
+}
+
 .site-footer::before {
   content: '';
   position: absolute;
@@ -3096,6 +3136,17 @@ section.section:not(.bg-white):not(.banner-cta):not(.news-showcase):not(.home-in
 }
 
 .jl-blog-follow-up i { color: #e8cbd1; }
+
+.jl-blog-follow-up a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.jl-blog-follow-up a:hover,
+.jl-blog-follow-up a:focus-visible {
+  color: var(--white);
+}
 
 .eyebrow,
 .news-kicker {

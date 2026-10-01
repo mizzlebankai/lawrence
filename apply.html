@@ -3,16 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Apply for Admission — Lawrence Senior High School</title>
-<meta name="description" content="Apply online for SHS or WASSCE Remedial admission at Lawrence College &amp; SHS in Sunyani.">
+<title>Apply for Admission — Lawrence College &amp; SHS</title>
+<meta name="description" content="Apply online for SHS, WASSCE Remedial or college admission at Lawrence College &amp; SHS in Sunyani.">
 
 <link rel="icon" href="assets/lawrence-logo.png">
 <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
 <link rel="stylesheet" href="css/style.css">
+<style>
+  @media print {
+    body { background: #fff !important; }
+    .site-header, .site-footer, .page-hero, #admissionForm, .no-print { display: none !important; }
+    #applySuccess { display: block !important; padding: 0 !important; }
+    #applySuccess .confirmation-intro { display: none !important; }
+    #summarySheet { display: block !important; border: 1px solid #222 !important; background: #fff !important; padding: 1.5rem !important; }
+    #summarySheet .summary-heading { display: flex !important; }
+    .summary-sheet { border: 0 !important; background: #fff !important; }
+  }
+</style>
 </head>
 <body>
 
+<!-- ============ HEADER ============ -->
 <header class="site-header">
   <div class="nav-inner">
     <a href="index.html" class="brand">
@@ -28,10 +40,12 @@
       </a>
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
+      <a href="leadership.html">Leadership</a>
       <a href="programs.html">Programs</a>
       <a href="news.html">News</a>
       <a href="gallery.html">Gallery</a>
       <a href="contact.html">Contact</a>
+      <a href="admin/login.html">Admin Login</a>
     </nav>
     <div class="nav-actions">
       <button class="menu-toggle" aria-label="Open menu"><span></span><span></span><span></span></button>
@@ -39,16 +53,19 @@
   </div>
 </header>
 
+<!-- ============ MOBILE MENU ============ -->
 <div class="mobile-menu">
   <button class="mobile-menu-close" aria-label="Close menu">&times;</button>
   <nav>
     <a href="index.html">Home</a>
     <a href="about.html">About</a>
+    <a href="leadership.html">Leadership</a>
     <a href="programs.html">Programs</a>
     <a href="news.html">News</a>
     <a href="gallery.html">Gallery</a>
     <a href="contact.html">Contact</a>
     <a href="apply.html">Apply</a>
+    <a href="admin/login.html">Admin Login</a>
   </nav>
   <div class="mobile-cta">
     <a href="apply.html" class="btn-lawrence btn-lawrence-gold">Apply Now</a>
@@ -56,36 +73,119 @@
   </div>
 </div>
 
+<!-- ============ PAGE HERO ============ -->
 <section class="page-hero page-hero-campus">
   <div class="hero-backdrop hero-backdrop--inner" aria-hidden="true"></div>
   <div class="container-page hero-reveal-content">
     <p class="eyebrow">Admissions</p>
-    <h1>Apply to Lawrence SHS.</h1>
-    <p class="mt-2" style="color: rgba(255,255,255,0.8); max-width: 55ch;">Complete the form below to start your application for SHS or WASSCE Remedial intake at Lawrence College. Our admissions team will follow up by phone or email within 3 working days.</p>
+    <h1>Apply for Admission.</h1>
+    <p class="mt-2" style="color: rgba(255,255,255,0.8); max-width: 55ch;">Complete the form below to apply for SHS, WASSCE Remedial, or Lawrence College. Our admissions team will follow up by phone or email within 3 working days.</p>
   </div>
 </section>
 
+<!-- ============ APPLICATION FORM ============ -->
 <section class="section">
   <div class="container-page">
     <div class="row justify-content-center">
       <div class="col-lg-9">
 
-        <div id="applySuccess" class="d-none text-center py-5 reveal is-visible">
-          <i class="bi bi-check-circle" style="font-size: 3rem; color: var(--forest);"></i>
-          <h2 class="font-display mt-3" style="font-size: 1.9rem;">Application received.</h2>
-          <p class="text-secondary mt-2" style="max-width: 50ch; margin: 0 auto;">Thank you for applying to Lawrence Senior High School. Our admissions office will contact you within 3 working days using the phone number or email you provided.</p>
-          <a href="index.html" class="btn-lawrence btn-lawrence-outline-dark mt-4">Back to Home</a>
+        <!-- success message, hidden until submit -->
+<div id="applySuccess" class="d-none py-5 reveal is-visible">
+          <div class="text-center mb-4 confirmation-intro">
+            <i class="bi bi-check-circle" style="font-size: 3rem; color: var(--forest);"></i>
+            <p class="eyebrow mt-3 mb-2">Office of Admissions</p>
+            <h2 class="font-display" style="font-size: 1.9rem;">Application submitted successfully.</h2>
+            <p class="text-secondary mt-2" style="max-width: 55ch; margin: 0 auto;">Your application has been received for review. Keep the reference number for future correspondence.</p>
+          </div>
+
+          <div id="summarySheet" class="summary-sheet border rounded-4 p-4 p-md-5 bg-light">
+            <div class="summary-heading d-none align-items-center gap-3 mb-4 pb-3 border-bottom">
+              <img src="assets/lawrence-logo.png" alt="Lawrence College &amp; SHS crest" style="height: 64px; width: 64px; object-fit: contain;">
+              <div><h2 class="font-display mb-1">Lawrence College &amp; SHS</h2><div class="small text-secondary">Lawrence City (Angel City), Adjei Ano South (Dr Berko), Sunyani, Bono Region, Ghana | Office of Admissions</div></div>
+            </div>
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+              <div><p class="eyebrow mb-1">Application Summary Sheet</p><h3 class="font-display mb-0">Admission Application</h3></div>
+              <div class="text-sm-end"><span class="small text-secondary d-block">Application Reference</span><span id="summaryReference" class="font-monospace fw-bold fs-5">—</span></div>
+            </div>
+            <div class="row g-3 border rounded p-3 mb-4 bg-white">
+              <div class="col-md-4"><strong>Date Received</strong><div id="summaryDate">—</div></div>
+              <div class="col-md-4"><strong>Intake</strong><div id="summaryBatch">—</div></div>
+              <div class="col-md-4"><strong>Application Status</strong><div id="summaryStatus">—</div></div>
+            </div>
+            <h4 class="h6 text-uppercase border-bottom pb-2 mb-3">Applicant Information</h4>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6"><strong>Full Name</strong><div id="summaryName">—</div></div>
+              <div class="col-md-3"><strong>Date of Birth</strong><div id="summaryDob">—</div></div>
+              <div class="col-md-3"><strong>Gender</strong><div id="summaryGender">—</div></div>
+              <div class="col-md-4"><strong>Nationality</strong><div id="summaryNationality">—</div></div>
+              <div class="col-md-4"><strong>Religion</strong><div id="summaryReligion">—</div></div>
+              <div class="col-md-4"><strong>Home Town / Residence</strong><div id="summaryHomeTown">—</div></div>
+              <div class="col-md-6"><strong>Applicant Phone</strong><div id="summaryPhone">—</div></div>
+              <div class="col-md-6"><strong>Applicant Email</strong><div id="summaryEmail">—</div></div>
+              <div class="col-md-6"><strong>Previous School / Institution</strong><div id="summarySchool">—</div></div>
+              <div class="col-md-6"><strong>BECE Index Number</strong><div id="summaryBece">—</div></div>
+              <div class="col-12"><strong>Residential Address</strong><div id="summaryAddress">—</div></div>
+            </div>
+            <h4 class="h6 text-uppercase border-bottom pb-2 mb-3">Academic Pathway</h4>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6"><strong>Intake Category</strong><div id="summaryProgram">—</div></div>
+              <div class="col-md-6"><strong>Program / Specialization</strong><div id="summarySpecialization">—</div></div>
+              <div class="col-md-4"><strong>Entry Level / Grade</strong><div id="summaryEntryLevel">—</div></div>
+              <div class="col-md-4"><strong>Intake Year</strong><div id="summaryYear">—</div></div>
+              <div class="col-md-4"><strong>Enrollment Status</strong><div id="summaryResidency">—</div></div>
+              <div class="col-12" id="summaryCollegeRow" hidden><strong>College Details</strong><div id="summaryCollege">—</div></div>
+            </div>
+            <h4 class="h6 text-uppercase border-bottom pb-2 mb-3">Parent / Guardian Contacts</h4>
+            <div class="row g-3 mb-4">
+              <div class="col-md-6"><strong>Father's Name</strong><div id="summaryFatherName">—</div></div>
+              <div class="col-md-6"><strong>Father's Details</strong><div id="summaryFatherDetails">—</div></div>
+              <div class="col-md-6"><strong>Mother's Name</strong><div id="summaryMotherName">—</div></div>
+              <div class="col-md-6"><strong>Mother's Details</strong><div id="summaryMotherDetails">—</div></div>
+              <div class="col-md-6"><strong>Guardian</strong><div id="summaryGuardian">—</div></div>
+              <div class="col-md-6"><strong>Relationship</strong><div id="summaryRelationship">—</div></div>
+              <div class="col-md-6"><strong>Guardian Phone</strong><div id="summaryGuardianPhone">—</div></div>
+              <div class="col-md-6"><strong>Guardian Email</strong><div id="summaryGuardianEmail">—</div></div>
+              <div class="col-12"><strong>Guardian Address</strong><div id="summaryGuardianAddress">—</div></div>
+            </div>
+            <h4 class="h6 text-uppercase border-bottom pb-2 mb-3">Health &amp; Supporting Documents</h4>
+            <div class="row g-3 mb-4">
+              <div class="col-md-4"><strong>Health Condition</strong><div id="summaryHealth">—</div></div>
+              <div class="col-md-4"><strong>Allergies</strong><div id="summaryAllergies">—</div></div>
+              <div class="col-md-6"><strong>Health Details</strong><div id="summaryHealthDetails">—</div></div>
+              <div class="col-md-6"><strong>Allergy Details</strong><div id="summaryAllergyDetails">—</div></div>
+              <div class="col-12"><strong>Special Needs / Notes</strong><div id="summarySpecialNeeds">—</div></div>
+              <div class="col-12"><strong>Submitted Documents</strong><ul id="summaryDocuments" class="mb-0"><li>No documents attached</li></ul></div>
+            </div>
+            <p class="small text-secondary border-top pt-3 mb-0">This sheet confirms that the information above was submitted electronically. It is not an admission offer. Keep it with your application reference for verification.</p>
+          </div>
+
+          <div class="d-flex justify-content-center flex-wrap gap-3 mt-4 no-print">
+            <button type="button" class="btn-lawrence btn-lawrence-gold" onclick="window.print()"><i class="bi bi-printer me-2" aria-hidden="true"></i>Print / Save Summary</button>
+            <a href="index.html" class="btn-lawrence btn-lawrence-outline-dark">Back to Home</a>
+          </div>
         </div>
+
+        <div id="applicationError" class="alert alert-danger d-none" role="alert"></div>
 
         <form id="admissionForm" class="needs-validation reveal is-visible" novalidate>
 
+          <!-- Student Information -->
           <p class="eyebrow">Step 1</p>
           <h2 class="font-display mb-4" style="font-size: 1.6rem;">Student Information</h2>
           <div class="row g-3 mb-5">
-            <div class="col-md-6">
-              <label class="form-label-lawrence" for="fName">Full Name</label>
-              <input type="text" class="form-control form-control-lawrence" id="fName" required>
-              <div class="invalid-feedback">Please enter the student's full name.</div>
+            <div class="col-md-4">
+              <label class="form-label-lawrence" for="fFirstName">First Name</label>
+              <input type="text" class="form-control form-control-lawrence" id="fFirstName" required>
+              <div class="invalid-feedback">Please enter a first name.</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-lawrence" for="fSurname">Surname</label>
+              <input type="text" class="form-control form-control-lawrence" id="fSurname" required>
+              <div class="invalid-feedback">Please enter a surname.</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-lawrence" for="fOtherNames">Other Names / Middle Name</label>
+              <input type="text" class="form-control form-control-lawrence" id="fOtherNames" placeholder="Optional">
             </div>
             <div class="col-md-3">
               <label class="form-label-lawrence" for="fDob">Date of Birth</label>
@@ -101,17 +201,46 @@
               </select>
               <div class="invalid-feedback">Please select a gender.</div>
             </div>
+            <div class="col-md-3">
+              <label class="form-label-lawrence" for="fNationality">Nationality</label>
+              <input type="text" class="form-control form-control-lawrence" id="fNationality" value="Ghanaian" required>
+              <div class="invalid-feedback">Please enter a nationality.</div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-lawrence" for="fReligion">Religion <span class="text-secondary fw-normal">(optional)</span></label>
+              <input type="text" class="form-control form-control-lawrence" id="fReligion">
+            </div>
             <div class="col-md-6">
-              <label class="form-label-lawrence" for="fJHS">Previous School (JHS)</label>
+              <label class="form-label-lawrence" for="fPhone">Applicant Phone Number</label>
+              <input type="tel" class="form-control form-control-lawrence" id="fPhone" placeholder="e.g. 024 000 0000" required>
+              <div class="invalid-feedback">Please enter a phone number.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fEmail">Applicant Email Address</label>
+              <input type="email" class="form-control form-control-lawrence" id="fEmail" required>
+              <div class="invalid-feedback">Please enter a valid email address.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fJHS">Previous School / Institution</label>
               <input type="text" class="form-control form-control-lawrence" id="fJHS" required>
               <div class="invalid-feedback">Please enter the previous school attended.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fHomeTown">Home Town / Current Residence</label>
+              <input type="text" class="form-control form-control-lawrence" id="fHomeTown">
             </div>
             <div class="col-md-6">
               <label class="form-label-lawrence" for="fBECE">BECE Index Number <span class="text-secondary fw-normal">(if applicable)</span></label>
               <input type="text" class="form-control form-control-lawrence" id="fBECE">
             </div>
+            <div class="col-12">
+              <label class="form-label-lawrence" for="fAddress">Applicant Residential / Digital Address</label>
+              <input type="text" class="form-control form-control-lawrence" id="fAddress" required>
+              <div class="invalid-feedback">Please enter the applicant's residential address.</div>
+            </div>
           </div>
 
+          <!-- Program Selection -->
           <p class="eyebrow">Step 2</p>
           <h2 class="font-display mb-4" style="font-size: 1.6rem;">Program Selection</h2>
           <div class="row g-3 mb-5">
@@ -119,23 +248,30 @@
               <label class="form-label-lawrence" for="fProgram">Applying For</label>
               <select class="form-select form-control-lawrence" id="fProgram" required>
                 <option value="" selected disabled>Select a program</option>
-                <option>SHS — General Arts</option>
-                <option>SHS — General Science</option>
-                <option>SHS — Business</option>
-                <option>SHS — Home Economics</option>
-                <option>SHS — Visual Arts</option>
-                <option>WASSCE Remedial</option>
+                <option value="shs">SHS</option>
+                <option value="remedial">WASSCE Remedial</option>
+                <option value="college">College</option>
               </select>
               <div class="invalid-feedback">Please select a program.</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label-lawrence" for="fResidency">Residency</label>
-              <select class="form-select form-control-lawrence" id="fResidency" required>
-                <option value="" selected disabled>Select</option>
-                <option>Boarding</option>
-                <option>Day Student</option>
+              <label class="form-label-lawrence" for="fSpecialization">Program / Specialization</label>
+              <select class="form-select form-control-lawrence" id="fSpecialization" required>
+                <option value="" selected disabled>Select a program first</option>
+                <option data-category="shs">General Arts</option>
+                <option data-category="shs">General Science</option>
+                <option data-category="shs">Business</option>
+                <option data-category="shs">Home Economics</option>
+                <option data-category="shs">Visual Arts</option>
+                <option data-category="remedial">WASSCE Remedial</option>
+                <option data-category="college">College Programme (specify below)</option>
               </select>
-              <div class="invalid-feedback">Please select boarding or day.</div>
+              <div class="invalid-feedback">Please select a program or specialization.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fEntryLevel">Entry Level / Grade</label>
+              <input type="text" class="form-control form-control-lawrence" id="fEntryLevel" placeholder="e.g. Form 1, Remedial, Level 100" required>
+              <div class="invalid-feedback">Please enter an entry level or grade.</div>
             </div>
             <div class="col-md-6">
               <label class="form-label-lawrence" for="fYear">Intake Year</label>
@@ -146,15 +282,92 @@
               </select>
               <div class="invalid-feedback">Please select an intake year.</div>
             </div>
+            <div class="col-md-6" id="residencyField">
+              <label class="form-label-lawrence" for="fResidency">Residency</label>
+              <select class="form-select form-control-lawrence" id="fResidency" required>
+                <option value="" selected disabled>Select</option>
+                <option>Boarding</option>
+                <option>Day Student</option>
+              </select>
+              <div class="invalid-feedback">Please select boarding or day.</div>
+            </div>
           </div>
 
+          <div id="collegeFields" class="mb-5 d-none" aria-hidden="true">
+            <p class="eyebrow">Step 2A</p>
+            <h2 class="font-display mb-4" style="font-size: 1.6rem;">College Details</h2>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label-lawrence" for="collegeProgram">Preferred College Programme</label>
+                <input type="text" class="form-control form-control-lawrence" id="collegeProgram" placeholder="e.g. Business Management, IT, etc." disabled>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label-lawrence" for="collegeQualification">Highest Qualification</label>
+                <input type="text" class="form-control form-control-lawrence" id="collegeQualification" placeholder="e.g. WASSCE, Diploma, Degree" disabled>
+              </div>
+              <div class="col-md-12">
+                <label class="form-label-lawrence" for="collegeReason">Why do you want to join Lawrence College?</label>
+                <textarea class="form-control form-control-lawrence" id="collegeReason" rows="3" placeholder="Briefly explain your interest in the college programme." disabled></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Parent / Guardian -->
           <p class="eyebrow">Step 3</p>
           <h2 class="font-display mb-4" style="font-size: 1.6rem;">Parent / Guardian Contact</h2>
           <div class="row g-3 mb-5">
             <div class="col-md-6">
-              <label class="form-label-lawrence" for="pName">Full Name</label>
+              <label class="form-label-lawrence" for="fatherName">Father's Name <span class="text-secondary fw-normal">(optional)</span></label>
+              <input type="text" class="form-control form-control-lawrence" id="fatherName">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fatherOccupation">Father's Occupation</label>
+              <input type="text" class="form-control form-control-lawrence" id="fatherOccupation">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fatherPhone">Father's Phone</label>
+              <input type="tel" class="form-control form-control-lawrence" id="fatherPhone" placeholder="e.g. 024 000 0000">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fatherNationality">Father's Nationality</label>
+              <input type="text" class="form-control form-control-lawrence" id="fatherNationality" value="Ghanaian">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fatherHomeTown">Father's Home Town</label>
+              <input type="text" class="form-control form-control-lawrence" id="fatherHomeTown">
+            </div>
+            <div class="col-12">
+              <label class="form-label-lawrence" for="fatherAddress">Father's Address</label>
+              <input type="text" class="form-control form-control-lawrence" id="fatherAddress">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="motherName">Mother's Name <span class="text-secondary fw-normal">(optional)</span></label>
+              <input type="text" class="form-control form-control-lawrence" id="motherName">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="motherOccupation">Mother's Occupation</label>
+              <input type="text" class="form-control form-control-lawrence" id="motherOccupation">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="motherPhone">Mother's Phone</label>
+              <input type="tel" class="form-control form-control-lawrence" id="motherPhone" placeholder="e.g. 024 000 0000">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="motherNationality">Mother's Nationality</label>
+              <input type="text" class="form-control form-control-lawrence" id="motherNationality" value="Ghanaian">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="motherHomeTown">Mother's Home Town</label>
+              <input type="text" class="form-control form-control-lawrence" id="motherHomeTown">
+            </div>
+            <div class="col-12">
+              <label class="form-label-lawrence" for="motherAddress">Mother's Address</label>
+              <input type="text" class="form-control form-control-lawrence" id="motherAddress">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="pName">Parent / Guardian Full Name</label>
               <input type="text" class="form-control form-control-lawrence" id="pName" required>
-              <div class="invalid-feedback">Please enter a parent or guardian name.</div>
+              <div class="invalid-feedback">Please enter the parent or guardian name.</div>
             </div>
             <div class="col-md-6">
               <label class="form-label-lawrence" for="pRelation">Relationship to Student</label>
@@ -162,33 +375,71 @@
               <div class="invalid-feedback">Please enter the relationship.</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label-lawrence" for="pPhone">Phone Number</label>
+              <label class="form-label-lawrence" for="pPhone">Primary Guardian Phone</label>
               <input type="tel" class="form-control form-control-lawrence" id="pPhone" placeholder="e.g. 024 000 0000" required>
               <div class="invalid-feedback">Please enter a phone number.</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label-lawrence" for="pEmail">Email Address</label>
-              <input type="email" class="form-control form-control-lawrence" id="pEmail" required>
+              <label class="form-label-lawrence" for="pEmail">Guardian Email Address <span class="text-secondary fw-normal">(optional)</span></label>
+              <input type="email" class="form-control form-control-lawrence" id="pEmail">
               <div class="invalid-feedback">Please enter a valid email address.</div>
             </div>
             <div class="col-12">
-              <label class="form-label-lawrence" for="pAddress">Home Address</label>
+              <label class="form-label-lawrence" for="pAddress">Guardian Residential / Digital Address</label>
               <textarea class="form-control form-control-lawrence" id="pAddress" rows="2" required></textarea>
-              <div class="invalid-feedback">Please enter a home address.</div>
+              <div class="invalid-feedback">Please enter a guardian address.</div>
             </div>
           </div>
 
+          <!-- Health and supporting documents -->
           <p class="eyebrow">Step 4</p>
-          <h2 class="font-display mb-4" style="font-size: 1.6rem;">Anything Else We Should Know?</h2>
-          <div class="mb-4">
-            <label class="form-label-lawrence" for="fNotes">Additional Notes <span class="text-secondary fw-normal">(optional)</span></label>
-            <textarea class="form-control form-control-lawrence" id="fNotes" rows="4" placeholder="Medical conditions, special learning needs, or anything else the admissions office should know."></textarea>
+          <h2 class="font-display mb-4" style="font-size: 1.6rem;">Health &amp; Supporting Documents</h2>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fHealth">Any Health Condition?</label>
+              <select class="form-select form-control-lawrence" id="fHealth"><option>No</option><option>Yes</option></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fAllergies">Any Allergies?</label>
+              <select class="form-select form-control-lawrence" id="fAllergies"><option>No</option><option>Yes</option></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fHealthDetails">Health Condition Details</label>
+              <textarea class="form-control form-control-lawrence" id="fHealthDetails" rows="3"></textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fAllergyDetails">Allergy Details</label>
+              <textarea class="form-control form-control-lawrence" id="fAllergyDetails" rows="3"></textarea>
+            </div>
+            <div class="col-12">
+              <label class="form-label-lawrence" for="fNotes">Other Special Needs / Medical Notes <span class="text-secondary fw-normal">(optional)</span></label>
+              <textarea class="form-control form-control-lawrence" id="fNotes" rows="3" placeholder="Any doctor recommendations, medications, or special support needs."></textarea>
+            </div>
+          </div>
+          <p class="small text-secondary">Supporting files are optional. PDF, JPG, or PNG; maximum 5 MB per document. Files are stored privately for admissions review.</p>
+          <p class="small text-secondary">We use application details and supporting files to assess admission and contact the applicant or guardian. Optional health and support details should be shared only when relevant. Private files are accessible to authorized Lawrence administrators.</p>
+          <div class="row g-3 mb-5">
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fPassport">Passport Photo <span class="text-secondary fw-normal">(JPG or PNG, max 2 MB)</span></label>
+              <input type="file" class="form-control form-control-lawrence" id="fPassport" accept="image/jpeg,image/png">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fResults">Report Card / BECE Results Slip <span class="text-secondary fw-normal">(PDF, JPG or PNG, max 5 MB)</span></label>
+              <input type="file" class="form-control form-control-lawrence" id="fResults" accept="application/pdf,image/jpeg,image/png">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-lawrence" for="fBirthCertificate">Birth Certificate / ID Copy <span class="text-secondary fw-normal">(PDF, JPG or PNG, max 5 MB)</span></label>
+              <input type="file" class="form-control form-control-lawrence" id="fBirthCertificate" accept="application/pdf,image/jpeg,image/png">
+            </div>
           </div>
 
+          <!-- Declaration -->
+          <p class="eyebrow">Step 5</p>
+          <h2 class="font-display mb-4" style="font-size: 1.6rem;">Declaration</h2>
           <div class="form-check mb-4">
             <input class="form-check-input" type="checkbox" id="fConsent" required>
             <label class="form-check-label text-secondary small" for="fConsent">
-              I confirm that the information provided is accurate to the best of my knowledge.
+              I confirm that this information is accurate to the best of my knowledge, understand this submission is not an admission offer, and consent to its use for admissions review and related communication.
             </label>
             <div class="invalid-feedback">Please confirm before submitting.</div>
           </div>
@@ -203,6 +454,7 @@
   </div>
 </section>
 
+<!-- ============ FOOTER ============ -->
 <footer class="site-footer">
   <div class="footer-main">
     <div class="container-page footer-layout">
@@ -214,14 +466,14 @@
           </a>
           <p class="footer-intro">Building confident learners and future-ready citizens through practical education, discipline and care.</p>
           <address class="footer-contact">
-            <span><i class="bi bi-geo-alt" aria-hidden="true"></i>Sunyani, Bono Region, Ghana</span>
+            <span><i class="bi bi-geo-alt" aria-hidden="true"></i>Lawrence City (Angel City), Adjei Ano South (Dr Berko), Sunyani, Bono Region, Ghana</span>
             <a href="https://wa.me/233257933174" target="_blank" rel="noopener noreferrer" aria-label="Message Lawrence on WhatsApp at +233 25 793 3174"><i class="bi bi-whatsapp" aria-hidden="true"></i>+233 25 793 3174</a>
           </address>
         </div>
         <nav class="footer-actions" aria-label="Admissions actions">
           <a class="footer-action" href="apply.html">Apply</a>
-          <a class="footer-action" href="Contact.html">Visit Campus</a>
-          <a class="footer-action" href="Contact.html">Contact Admissions</a>
+          <a class="footer-action" href="contact.html">Visit Campus</a>
+          <a class="footer-action" href="contact.html">Contact Admissions</a>
         </nav>
       </div>
       <div class="footer-links">
@@ -229,7 +481,7 @@
           <h2>Explore</h2>
           <ul class="footer-link-list">
             <li><a href="college.html">College</a></li>
-            <li><a href="Programs.html">SHS Programs</a></li>
+            <li><a href="programs.html">SHS Programs</a></li>
             <li><a href="about.html">About Us</a></li>
             <li><a href="news.html">News &amp; Events</a></li>
             <li><a href="gallery.html">Gallery</a></li>
@@ -239,8 +491,8 @@
           <h2>Admissions</h2>
           <ul class="footer-link-list">
             <li><a href="apply.html">How to Apply</a></li>
-            <li><a href="Programs.html">Programs</a></li>
-            <li><a href="Contact.html">Contact Us</a></li>
+            <li><a href="programs.html">Programs</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
           </ul>
         </div>
         <div>
@@ -251,9 +503,6 @@
           <h2>Connect</h2>
           <p class="footer-social-label">Follow Lawrence</p>
           <div class="social-row">
-            <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-            <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-            <a href="#" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
             <a href="https://www.linkedin.com/in/lawrence-college-a5b45743b/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
           </div>
         </div>
@@ -263,13 +512,22 @@
   <div class="footer-bottom">
     <div class="container-page footer-bottom-inner">
       <span>&copy; 2026 Lawrence College &amp; SHS. All rights reserved.</span>
-      <span>Honour ? Knowledge ? Integrity</span>
+      <span>Discipline · Excellence · God-fearing</span>
       <a href="https://wa.me/233257933174" target="_blank" rel="noopener noreferrer" aria-label="Contact Apex Labs on WhatsApp">Built by Apex Labs</a>
     </div>
   </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  window.lawrenceSupabase = window.supabase
+    ? supabase.createClient(
+        'https://ttjgkfsrkxpxeufkikma.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0amdrZnNya3hweGV1Zmtpa21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3ODAxOTYsImV4cCI6MjEwNjM1NjE5Nn0.WeSQ17D0rjM_Jxltvy1X4sjeFG7lRtRDPUjcUdaw8Uk'
+      )
+    : null;
+</script>
 <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="js/main.js"></script>
+<script src="js/main.js?v=20260930-admissions-summary"></script>
 </body>
 </html>

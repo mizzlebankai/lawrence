@@ -9,7 +9,7 @@
 <link rel="icon" href="assets/lawrence-logo.png">
 <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=20260930-newsletter">
 </head>
 <body class="has-hero">
 
@@ -31,10 +31,12 @@
       </a>
       <a href="index.html" class="is-active">Home</a>
       <a href="about.html">About</a>
-      <a href="Programs.html">Programs</a>
+      <a href="leadership.html">Leadership</a>
+      <a href="programs.html">Programs</a>
       <a href="news.html">News</a>
       <a href="gallery.html">Gallery</a>
-      <a href="Contact.html">Contact</a>
+      <a href="contact.html">Contact</a>
+      <a href="admin/login.html">Admin Login</a>
     </nav>
 
     <div class="nav-actions">
@@ -54,9 +56,6 @@
 
     <div class="mobile-actions">
       <div class="mobile-socials" aria-label="Social links">
-        <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-        <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-        <a href="#" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
         <a href="https://www.linkedin.com/in/lawrence-college-a5b45743b/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
       </div>
       <button class="mobile-menu-close" aria-label="Close menu">&times;</button>
@@ -68,18 +67,20 @@
       <nav>
         <a href="index.html">Home</a>
         <a href="about.html">About Us</a>
-        <a href="Programs.html">Programs</a>
+        <a href="leadership.html">Leadership</a>
+        <a href="programs.html">Programs</a>
         <a href="news.html">News</a>
         <a href="gallery.html">Gallery</a>
-        <a href="Contact.html">Contact</a>
+        <a href="contact.html">Contact</a>
         <a href="apply.html">Apply</a>
+        <a href="admin/login.html">Admin Login</a>
       </nav>
     </div>
 
     <div class="mobile-menu-column mobile-contact-column">
       <h3>Contact</h3>
       <ul>
-        <li><i class="bi bi-geo-alt me-2"></i>Sunyani, Bono Region, Ghana</li>
+        <li><i class="bi bi-geo-alt me-2"></i>Lawrence City (Angel City), Adjei Ano South (Dr Berko), Sunyani, Bono Region, Ghana</li>
         <li><i class="bi bi-whatsapp me-2"></i><a href="https://wa.me/233257933174" target="_blank" rel="noopener noreferrer" aria-label="Message Lawrence on WhatsApp at +233 25 793 3174">+233 25 793 3174</a></li>
         <li><i class="bi bi-envelope me-2"></i><a href="mailto:info@lawrencecollege.edu.gh">info@lawrencecollege.edu.gh</a></li>
       </ul>
@@ -108,7 +109,7 @@
 
     <div class="hero-cta">
       <a href="apply.html" class="btn-lawrence btn-lawrence-gold">Start Admission</a>
-      <a href="Programs.html" class="btn-lawrence btn-lawrence-outline">Explore Programs</a>
+      <a href="programs.html" class="btn-lawrence btn-lawrence-outline">Explore Programs</a>
     </div>
   </div>
 
@@ -160,7 +161,7 @@
           <li>Strong subject foundation</li>
           <li>Academic mentoring</li>
         </ul>
-        <a href="Programs.html" class="btn-lawrence btn-lawrence-outline-dark">View SHS Options</a>
+        <a href="programs.html" class="btn-lawrence btn-lawrence-outline-dark">View SHS Options</a>
       </article>
     </div>
   </div>
@@ -278,10 +279,10 @@
             <span class="jl-blog-solution-icon" aria-hidden="true"><i class="bi bi-boxes"></i></span>
             <div>
               <p class="jl-blog-kicker">The solution</p>
-              <p>Project Bright is a logistics platform that makes it easier and faster for sellers to connect to nearby warehouse, distribution and fulfillment centers, transportation, and third-party logistics (3PL) providers.</p>
+              <p>Project Bright is a solution for stakeholders in the logistics industry to more easily transact business.</p>
             </div>
           </div>
-          <p class="jl-blog-follow-up"><i class="bi bi-stars" aria-hidden="true"></i> More updates to follow as we progress. Thanks, everyone.</p>
+          <p class="jl-blog-follow-up"><i class="bi bi-stars" aria-hidden="true"></i> <a href="#newsletterForm">Subscribe to our newsletter to stay updated.</a></p>
         </div>
       </div>
     </article>
@@ -345,9 +346,51 @@
       </div>
       <div class="cta-actions">
         <a href="apply.html" class="btn-lawrence btn-lawrence-gold">Apply Now</a>
-        <a href="Contact.html" class="btn-lawrence btn-lawrence-outline-dark">Speak to Admissions</a>
+        <a href="contact.html" class="btn-lawrence btn-lawrence-outline-dark">Speak to Admissions</a>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="newsletter-section" aria-labelledby="newsletter-title">
+  <div class="container-page newsletter-layout">
+    <div class="newsletter-copy">
+      <p class="eyebrow">Lawrence updates</p>
+      <h2 id="newsletter-title">Stay connected to what’s next.</h2>
+      <p>Receive occasional school news, program updates and admissions announcements.</p>
+      <p class="small text-secondary">Lawrence stores subscriber details and uses Brevo to deliver emails. Confirm your subscription by email; unsubscribe at any time.</p>
+    </div>
+    <form id="newsletterForm" class="newsletter-form" novalidate>
+      <div class="newsletter-fields">
+        <label class="newsletter-name" for="newsletterName">Name <span>(optional)</span>
+          <input id="newsletterName" name="full_name" type="text" class="form-control" autocomplete="name" maxlength="120">
+        </label>
+        <label class="newsletter-email" for="newsletterEmail">Email address
+          <input id="newsletterEmail" name="email" type="email" class="form-control" autocomplete="email" maxlength="254" required>
+          <span class="invalid-feedback">Enter a valid email address.</span>
+        </label>
+        <label class="newsletter-interest" for="newsletterInterest">Updates about
+          <select id="newsletterInterest" name="interest_area" class="form-select" required>
+            <option value="general">All Lawrence updates</option>
+            <option value="shs">SHS</option>
+            <option value="remedial">WASSCE Remedial</option>
+            <option value="college">College</option>
+          </select>
+        </label>
+        <div class="newsletter-honeypot" aria-hidden="true" hidden>
+          <label for="newsletterWebsite">Leave this field blank</label>
+          <input id="newsletterWebsite" name="website" type="text" tabindex="-1" autocomplete="off">
+        </div>
+      </div>
+      <label class="newsletter-consent" for="newsletterConsent">
+        <input id="newsletterConsent" name="consent" type="checkbox" required>
+        <span>I agree to receive occasional email updates from Lawrence. I can unsubscribe at any time.</span>
+      </label>
+      <div class="newsletter-submit-row">
+        <button id="newsletterSubmit" class="btn-lawrence btn-lawrence-gold" type="submit">Subscribe <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i></button>
+        <span id="newsletterStatus" role="status" aria-live="polite"></span>
+      </div>
+    </form>
   </div>
 </section>
 
@@ -362,14 +405,14 @@
           </a>
           <p class="footer-intro">Building confident learners and future-ready citizens through practical education, discipline and care.</p>
           <address class="footer-contact">
-            <span><i class="bi bi-geo-alt" aria-hidden="true"></i>Sunyani, Bono Region, Ghana</span>
+            <span><i class="bi bi-geo-alt" aria-hidden="true"></i>Lawrence City (Angel City), Adjei Ano South (Dr Berko), Sunyani, Bono Region, Ghana</span>
             <a href="https://wa.me/233257933174" target="_blank" rel="noopener noreferrer" aria-label="Message Lawrence on WhatsApp at +233 25 793 3174"><i class="bi bi-whatsapp" aria-hidden="true"></i>+233 25 793 3174</a>
           </address>
         </div>
         <nav class="footer-actions" aria-label="Admissions actions">
           <a class="footer-action" href="apply.html">Apply</a>
-          <a class="footer-action" href="Contact.html">Visit Campus</a>
-          <a class="footer-action" href="Contact.html">Contact Admissions</a>
+          <a class="footer-action" href="contact.html">Visit Campus</a>
+          <a class="footer-action" href="contact.html">Contact Admissions</a>
         </nav>
       </div>
       <div class="footer-links">
@@ -377,7 +420,7 @@
           <h2>Explore</h2>
           <ul class="footer-link-list">
             <li><a href="college.html">College</a></li>
-            <li><a href="Programs.html">SHS Programs</a></li>
+            <li><a href="programs.html">SHS Programs</a></li>
             <li><a href="about.html">About Us</a></li>
             <li><a href="news.html">News &amp; Events</a></li>
             <li><a href="gallery.html">Gallery</a></li>
@@ -387,8 +430,8 @@
           <h2>Admissions</h2>
           <ul class="footer-link-list">
             <li><a href="apply.html">How to Apply</a></li>
-            <li><a href="Programs.html">Programs</a></li>
-            <li><a href="Contact.html">Contact Us</a></li>
+            <li><a href="programs.html">Programs</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
           </ul>
         </div>
         <div>
@@ -399,9 +442,6 @@
           <h2>Connect</h2>
           <p class="footer-social-label">Follow Lawrence</p>
           <div class="social-row">
-            <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
-            <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-            <a href="#" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
             <a href="https://www.linkedin.com/in/lawrence-college-a5b45743b/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
           </div>
         </div>
@@ -411,13 +451,22 @@
   <div class="footer-bottom">
     <div class="container-page footer-bottom-inner">
       <span>&copy; 2026 Lawrence College &amp; SHS. All rights reserved.</span>
-      <span>Honour · Knowledge · Integrity</span>
+      <span>Discipline · Excellence · God-fearing</span>
       <a href="https://wa.me/233257933174" target="_blank" rel="noopener noreferrer" aria-label="Contact Apex Labs on WhatsApp">Built by Apex Labs</a>
     </div>
   </div>
 </footer>
 
 <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  window.lawrenceSupabase = window.supabase
+    ? supabase.createClient(
+        'https://ttjgkfsrkxpxeufkikma.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0amdrZnNya3hweGV1Zmtpa21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3ODAxOTYsImV4cCI6MjEwNjM1NjE5Nn0.WeSQ17D0rjM_Jxltvy1X4sjeFG7lRtRDPUjcUdaw8Uk'
+      )
+    : null;
+</script>
+<script src="js/main.js?v=20260930-newsletter"></script>
 </body>
 </html>

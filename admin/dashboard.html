@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lawrence Admin Dashboard</title>
+  <link rel="icon" href="../assets/lawrence-logo.png">
+  <link rel="stylesheet" href="../vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../vendor/bootstrap-icons/bootstrap-icons.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body {
+      background: #f5f7fb;
+      color: var(--text);
+    }
+    .dashboard-shell {
+      max-width: 1280px;
+      margin: 2rem auto;
+      padding: 0 1rem 3rem;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      background: #ffffff;
+      border: 1px solid rgba(21,61,99,0.08);
+      border-radius: 18px;
+      padding: 1rem 1.2rem;
+      box-shadow: 0 16px 28px rgba(21,61,99,0.08);
+      margin-bottom: 1.5rem;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid rgba(21,61,99,0.08);
+      border-radius: 18px;
+      padding: 1.25rem;
+      box-shadow: 0 14px 26px rgba(21,61,99,0.04);
+    }
+    .stat-card strong {
+      display: block;
+      font-size: 2rem;
+      color: var(--navy-900);
+      line-height: 1;
+    }
+    .table-wrap {
+      background: #fff;
+      border: 1px solid rgba(21,61,99,0.08);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 18px 26px rgba(21,61,99,0.05);
+    }
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid rgba(21,61,99,0.08);
+    }
+    .filter-row select {
+      min-width: 180px;
+    }
+    .toolbar-row {
+      display:flex;
+      flex-wrap:wrap;
+      gap:.75rem;
+      align-items:end;
+      padding:1rem;
+      border-bottom:1px solid rgba(21,61,99,0.08);
+    }
+    .toolbar-row label { min-width:150px; }
+    .toolbar-row label.search-field { flex:1 1 240px; }
+    .selection-toolbar { justify-content:space-between; }
+    .selection-actions { display:flex; flex-wrap:wrap; align-items:end; gap:.6rem; }
+    .table-footer { display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:1rem; }
+    .danger-action { color:#9a2334; border-color:#9a2334; }
+    .danger-action:hover { color:#fff; background:#9a2334; }
+    #dashboardNotice { margin-bottom:1rem; }
+    .view-tabs { display:flex; gap:.5rem; border-bottom:1px solid rgba(21,61,99,0.14); margin-bottom:1.25rem; }
+    .view-tab { border:0; border-bottom:3px solid transparent; background:transparent; padding:.7rem .9rem; color:var(--text-soft); font-weight:700; }
+    .view-tab[aria-pressed="true"] { color:var(--navy-900); border-bottom-color:var(--maroon); }
+    table {
+      width: 100%;
+      margin: 0;
+    }
+    .badge {
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .muted {
+      color: var(--text-soft);
+    }
+    .application-dialog {
+      width: min(920px, calc(100vw - 2rem));
+      max-height: calc(100vh - 2rem);
+      padding: 1.5rem;
+      border: 0;
+      border-radius: 12px;
+      box-shadow: 0 24px 70px rgba(5,18,31,0.28);
+      color: var(--text);
+    }
+    .application-dialog::backdrop { background: rgba(5,18,31,0.62); }
+    .dialog-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; border-bottom:1px solid #e7ebef; padding-bottom:1rem; margin-bottom:1rem; }
+    .application-detail-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem 1.25rem; }
+    .detail-field { min-width:0; }
+    .detail-field strong { display:block; color:var(--text-soft); font-size:.72rem; text-transform:uppercase; }
+    .detail-field span { display:block; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .dialog-footer { display:flex; flex-wrap:wrap; align-items:end; gap:.75rem; border-top:1px solid #e7ebef; padding-top:1rem; margin-top:1.25rem; }
+    .dialog-footer label { min-width:min(220px,100%); }
+    #applicationDocuments { padding-left:1.25rem; }
+    #applicationDocuments li { margin:.5rem 0; }
+    @media (max-width: 600px) {
+      .application-dialog { padding:1rem; }
+      .application-detail-grid { grid-template-columns:1fr; }
+      .topbar { align-items:flex-start; }
+      .table-footer { align-items:flex-start; flex-direction:column; }
+      .selection-toolbar { align-items:flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-shell">
+    <header class="topbar">
+      <div>
+        <strong>Lawrence Admin Dashboard</strong>
+        <div class="muted">Admissions, waitlist and updates</div>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="../index.html" class="btn btn-outline-primary"><i class="bi bi-house me-1" aria-hidden="true"></i>View site</a>
+        <button id="refreshButton" type="button" class="btn btn-outline-secondary"><i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Refresh</button>
+        <button id="exportButton" type="button" class="btn btn-outline-primary"><i class="bi bi-download me-1" aria-hidden="true"></i>Export filtered CSV</button>
+        <button id="signOutButton" class="btn-lawrence btn-lawrence-outline-dark">Sign out</button>
+      </div>
+    </header>
+    <div id="dashboardNotice" class="alert d-none" role="status" aria-live="polite"></div>
+
+    <nav class="view-tabs" aria-label="Admin dashboard sections">
+      <button id="applicationsTab" type="button" class="view-tab" aria-pressed="true">Applications</button>
+      <button id="newsletterTab" type="button" class="view-tab" aria-pressed="false">Newsletter</button>
+    </nav>
+
+    <div id="applicationsView">
+    <section class="stat-grid">
+      <div class="stat-card">
+        <span class="muted">Total applications</span>
+        <strong id="totalCount">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="muted">College waitlist</span>
+        <strong id="collegeWaitlist">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="muted">SHS</span>
+        <strong id="shsCount">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="muted">Remedial</span>
+        <strong id="remedialCount">0</strong>
+      </div>
+    </section>
+
+    <section class="table-wrap">
+      <div class="toolbar-row">
+        <label class="search-field" for="applicationSearch">
+          <span class="muted d-block mb-1">Search applications</span>
+          <input id="applicationSearch" class="form-control" type="search" placeholder="Name, reference, email or phone">
+        </label>
+        <label for="programFilter">
+          <span class="muted me-2">Program</span>
+          <select id="programFilter" class="form-select">
+            <option value="">All</option>
+            <option value="shs">SHS</option>
+            <option value="remedial">Remedial</option>
+            <option value="college">College</option>
+          </select>
+        </label>
+
+        <label for="statusFilter">
+          <span class="muted me-2">Status</span>
+          <select id="statusFilter" class="form-select">
+            <option value="">All</option>
+            <option value="submitted">Submitted</option>
+            <option value="waitlisted">Waitlisted</option>
+            <option value="in_review">In Review</option>
+            <option value="accepted">Accepted</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </label>
+        <label for="yearFilter">
+          <span class="muted me-2">Intake year</span>
+          <select id="yearFilter" class="form-select"><option value="">All years</option></select>
+        </label>
+        <label for="sortFilter">
+          <span class="muted me-2">Sort by</span>
+          <select id="sortFilter" class="form-select">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="year-desc">Intake year: newest</option>
+            <option value="year-asc">Intake year: oldest</option>
+            <option value="name-asc">Applicant name: A-Z</option>
+          </select>
+        </label>
+        <button id="deleteYearBatch" type="button" class="btn btn-outline-danger danger-action" disabled>Delete year batch</button>
+      </div>
+
+      <div class="toolbar-row selection-toolbar">
+        <label class="d-flex align-items-center gap-2 mb-0">
+          <input id="selectVisible" type="checkbox" class="form-check-input mt-0">
+          <span id="selectionSummary">Select visible applications</span>
+        </label>
+        <div class="selection-actions">
+          <label for="bulkStatus" class="mb-0">
+            <span class="muted d-block mb-1">Set selected status</span>
+            <select id="bulkStatus" class="form-select" disabled>
+              <option value="in_review">In Review</option>
+              <option value="submitted">Submitted</option>
+              <option value="waitlisted">Waitlisted</option>
+              <option value="accepted">Accepted</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </label>
+          <button id="applyBulkStatus" type="button" class="btn btn-primary" disabled>Update selected</button>
+          <button id="deleteSelected" type="button" class="btn btn-outline-danger danger-action" disabled>Delete selected</button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th><span class="visually-hidden">Select</span></th>
+              <th>Reference</th>
+              <th>Applicant</th>
+              <th>Program</th>
+              <th>Status</th>
+              <th>Submitted</th>
+              <th><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="applicationsTableBody"></tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <span id="resultsSummary" class="muted small">No applications</span>
+        <div class="d-flex align-items-center gap-2">
+          <label for="pageSize" class="small muted">Rows</label>
+          <select id="pageSize" class="form-select form-select-sm" style="width:auto">
+            <option value="25">25</option><option value="50">50</option><option value="100">100</option>
+          </select>
+          <button id="previousPage" type="button" class="btn btn-sm btn-outline-secondary" aria-label="Previous page">Previous</button>
+          <span id="pageSummary" class="small text-nowrap">Page 1 of 1</span>
+          <button id="nextPage" type="button" class="btn btn-sm btn-outline-secondary" aria-label="Next page">Next</button>
+        </div>
+      </div>
+    </section>
+    </div>
+
+    <div id="newsletterView" class="d-none">
+      <div id="newsletterModeNotice" class="alert alert-secondary" role="status" aria-live="polite">Checking newsletter send mode...</div>
+      <section class="stat-grid">
+        <div class="stat-card"><span class="muted">Subscribers</span><strong id="subscriberTotal">0</strong></div>
+        <div class="stat-card"><span class="muted">Active</span><strong id="subscriberActive">0</strong></div>
+        <div class="stat-card"><span class="muted">Pending confirmation</span><strong id="subscriberPending">0</strong></div>
+        <div class="stat-card"><span class="muted">Unsubscribed</span><strong id="subscriberUnsubscribed">0</strong></div>
+      </section>
+      <section class="table-wrap mb-4">
+        <div class="toolbar-row justify-content-between">
+          <div><strong>Compose a newsletter</strong><div class="muted small">Save a draft, send a test, then send to confirmed subscribers only.</div></div>
+          <span id="campaignAudiencePreview" class="badge bg-light text-dark">0 eligible recipients</span>
+        </div>
+        <form id="campaignForm" class="p-3 p-md-4">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label for="campaignSubject" class="form-label fw-semibold">Subject</label>
+              <input id="campaignSubject" class="form-control" type="text" maxlength="150" required>
+            </div>
+            <div class="col-md-4">
+              <label for="campaignInterest" class="form-label fw-semibold">Recipient interest</label>
+              <select id="campaignInterest" class="form-select">
+                <option value="general">All confirmed subscribers</option>
+                <option value="shs">SHS and general updates</option>
+                <option value="remedial">Remedial and general updates</option>
+                <option value="college">College and general updates</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label for="campaignBody" class="form-label fw-semibold">Message</label>
+              <textarea id="campaignBody" class="form-control" rows="8" maxlength="12000" required placeholder="Write your newsletter message in plain text."></textarea>
+            </div>
+            <div class="col-md-6">
+              <label for="campaignTestEmail" class="form-label fw-semibold">Test recipient email</label>
+              <input id="campaignTestEmail" class="form-control" type="email" autocomplete="email" placeholder="Your address for a test send">
+            </div>
+            <div class="col-12 d-flex flex-wrap gap-2 align-items-center">
+              <button id="saveCampaignDraft" type="submit" class="btn btn-primary">Save draft</button>
+              <button id="sendCampaignTest" type="button" class="btn btn-outline-secondary" disabled>Send test</button>
+              <span id="campaignFormMessage" class="small" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+        </form>
+      </section>
+      <section class="table-wrap mb-4">
+        <div class="toolbar-row justify-content-between">
+          <strong>Campaign history</strong>
+          <button id="refreshCampaigns" type="button" class="btn btn-outline-secondary">Refresh campaigns</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th>Subject</th><th>Audience</th><th>Status</th><th>Sent / Recipients</th><th>Failed</th><th>Created</th><th>Actions</th></tr></thead>
+            <tbody id="campaignTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="table-wrap">
+        <div class="toolbar-row">
+          <label class="search-field" for="subscriberSearch">
+            <span class="muted d-block mb-1">Search subscribers</span>
+            <input id="subscriberSearch" class="form-control" type="search" placeholder="Name or email">
+          </label>
+          <label for="subscriberInterestFilter"><span class="muted me-2">Interest</span>
+            <select id="subscriberInterestFilter" class="form-select">
+              <option value="">All interests</option><option value="general">General</option><option value="shs">SHS</option><option value="remedial">Remedial</option><option value="college">College</option>
+            </select>
+          </label>
+          <label for="subscriberStatusFilter"><span class="muted me-2">Status</span>
+            <select id="subscriberStatusFilter" class="form-select">
+              <option value="">All statuses</option><option value="pending_confirmation">Pending confirmation</option><option value="active">Active</option><option value="unsubscribed">Unsubscribed</option><option value="bounced">Bounced</option>
+            </select>
+          </label>
+          <button id="refreshSubscribers" type="button" class="btn btn-outline-secondary">Refresh</button>
+          <button id="exportSubscribers" type="button" class="btn btn-outline-primary">Export filtered CSV</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th>Name</th><th>Email</th><th>Interest</th><th>Subscribed</th><th>Status</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+            <tbody id="subscriberTableBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer"><span id="subscriberResults" class="muted small">No subscribers</span></div>
+      </section>
+    </div>
+
+    <dialog id="applicationDialog" class="application-dialog" aria-labelledby="detailReference">
+      <div class="dialog-heading">
+        <div>
+          <span class="muted small">Application review</span>
+          <h2 id="detailReference" class="h4 mb-0">Application</h2>
+        </div>
+        <button id="closeApplicationDialog" type="button" class="btn btn-outline-secondary" aria-label="Close application details">Close</button>
+      </div>
+      <div id="applicationDetailFields" class="application-detail-grid"></div>
+      <section class="mt-4">
+        <h3 class="h6">Supporting documents</h3>
+        <ul id="applicationDocuments" class="mb-0"></ul>
+      </section>
+      <div class="dialog-footer">
+        <label for="detailStatus" class="small fw-semibold">Application status
+          <select id="detailStatus" class="form-select mt-1">
+            <option value="submitted">Submitted</option>
+            <option value="in_review">In Review</option>
+            <option value="waitlisted">Waitlisted</option>
+            <option value="accepted">Accepted</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </label>
+        <button id="saveApplicationStatus" type="button" class="btn btn-primary">Save status</button>
+        <button id="deleteSingleApplication" type="button" class="btn btn-outline-danger danger-action ms-auto">Delete record</button>
+        <span id="applicationDetailMessage" class="small" aria-live="polite"></span>
+      </div>
+    </dialog>
+
+    <dialog id="deleteConfirmationDialog" class="application-dialog" aria-labelledby="deleteConfirmationTitle">
+      <form method="dialog" class="dialog-heading">
+        <div>
+          <span class="muted small">Permanent action</span>
+          <h2 id="deleteConfirmationTitle" class="h4 mb-0">Confirm deletion</h2>
+        </div>
+        <button type="submit" class="btn btn-outline-secondary" aria-label="Cancel deletion">Cancel</button>
+      </form>
+      <p id="deleteConfirmationDescription"></p>
+      <label for="deleteConfirmationInput" class="small fw-semibold">Type <code id="deleteConfirmationPhrase"></code> to confirm
+        <input id="deleteConfirmationInput" class="form-control mt-1" autocomplete="off" spellcheck="false">
+      </label>
+      <div class="dialog-footer">
+        <button id="confirmDeleteButton" type="button" class="btn btn-danger" disabled>Delete permanently</button>
+        <button id="cancelDeleteButton" type="button" class="btn btn-outline-secondary">Cancel</button>
+      </div>
+    </dialog>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabaseUrl = 'https://ttjgkfsrkxpxeufkikma.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0amdrZnNya3hweGV1Zmtpa21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3ODAxOTYsImV4cCI6MjEwNjM1NjE5Nn0.WeSQ17D0rjM_Jxltvy1X4sjeFG7lRtRDPUjcUdaw8Uk';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const programFilter = document.getElementById('programFilter');
+    const statusFilter = document.getElementById('statusFilter');
+    const yearFilter = document.getElementById('yearFilter');
+    const searchInput = document.getElementById('applicationSearch');
+    const sortFilter = document.getElementById('sortFilter');
+    const tableBody = document.getElementById('applicationsTableBody');
+    const button = document.getElementById('signOutButton');
+    const allApplications = [];
+    const allSubscribers = [];
+    const allCampaigns = [];
+    const selectedIds = new Set();
+    let visibleApplications = [];
+    let currentPage = 1;
+    const applicationDialog = document.getElementById('applicationDialog');
+    const detailFields = document.getElementById('applicationDetailFields');
+    const documentList = document.getElementById('applicationDocuments');
+    const detailStatus = document.getElementById('detailStatus');
+    const detailMessage = document.getElementById('applicationDetailMessage');
+    const saveStatusButton = document.getElementById('saveApplicationStatus');
+    const dashboardNotice = document.getElementById('dashboardNotice');
+    const deleteConfirmationDialog = document.getElementById('deleteConfirmationDialog');
+    const deleteConfirmationInput = document.getElementById('deleteConfirmationInput');
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+    let pendingDeleteApplications = [];
+    let pendingDeletePhrase = '';
+    let selectedApplication = null;
+    let subscribersLoaded = false;
+    let campaignsLoaded = false;
+    let newsletterModeLoaded = false;
+    let liveCampaignSendingEnabled = false;
+    let selectedCampaignId = null;
+
+    async function ensureAuthorized() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = 'login.html';
+        return false;
+      }
+
+      const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (assuranceError || (assurance?.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2')) {
+        await supabase.auth.signOut();
+        window.location.href = 'login.html';
+        return false;
+      }
+
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .limit(1);
+
+      if (error || !data || data.length === 0) {
+        await supabase.auth.signOut();
+        window.location.href = 'login.html';
+        return false;
+      }
+
+      return true;
+    }
+
+    async function loadApplications() {
+      const { data, error } = await supabase.from('applications').select('*').order('submitted_at', { ascending: false });
+
+      if (error) {
+        showNotice('Unable to load applications. Please refresh and try again.', 'danger');
+        return;
+      }
+
+      allApplications.splice(0, allApplications.length, ...(data || []));
+      syncYearOptions();
+      renderApplications();
+      document.getElementById('totalCount').textContent = allApplications.length;
+      document.getElementById('collegeWaitlist').textContent = allApplications.filter((item) => item.program_type === 'college' && item.status === 'waitlisted').length;
+      document.getElementById('shsCount').textContent = allApplications.filter((item) => item.program_type === 'shs').length;
+      document.getElementById('remedialCount').textContent = allApplications.filter((item) => item.program_type === 'remedial').length;
+    }
+
+    function syncYearOptions() {
+      const previousValue = yearFilter.value;
+      const years = [...new Set(allApplications.map((app) => String(app.intake_year || app.form_data?.intake_year || '')).filter(Boolean))].sort((a, b) => Number(b) - Number(a));
+      yearFilter.replaceChildren(new Option('All years', ''));
+      years.forEach((year) => yearFilter.add(new Option(year, year)));
+      if (years.includes(previousValue)) yearFilter.value = previousValue;
+    }
+
+    function getFilteredApplications() {
+      const searchTerm = searchInput.value.trim().toLowerCase();
+      const filtered = allApplications.filter((app) => {
+        const year = String(app.intake_year || app.form_data?.intake_year || '');
+        const searchableText = [app.reference_number, app.applicant_name, app.email, app.phone].join(' ').toLowerCase();
+        return (!programFilter.value || app.program_type === programFilter.value)
+          && (!statusFilter.value || app.status === statusFilter.value)
+          && (!yearFilter.value || year === yearFilter.value)
+          && (!searchTerm || searchableText.includes(searchTerm));
+      });
+
+      const sortValue = sortFilter.value;
+      filtered.sort((a, b) => {
+        if (sortValue === 'name-asc') return (a.applicant_name || '').localeCompare(b.applicant_name || '');
+        if (sortValue === 'year-desc' || sortValue === 'year-asc') {
+          const yearDifference = Number(a.intake_year || a.form_data?.intake_year || 0) - Number(b.intake_year || b.form_data?.intake_year || 0);
+          return sortValue === 'year-desc' ? -yearDifference : yearDifference;
+        }
+        const dateDifference = new Date(a.submitted_at || 0) - new Date(b.submitted_at || 0);
+        return sortValue === 'oldest' ? dateDifference : -dateDifference;
+      });
+      return filtered;
+    }
+
+    function renderApplications() {
+      visibleApplications = getFilteredApplications();
+      const pageSize = Number(document.getElementById('pageSize').value);
+      const pageCount = Math.max(1, Math.ceil(visibleApplications.length / pageSize));
+      currentPage = Math.min(currentPage, pageCount);
+      const startIndex = (currentPage - 1) * pageSize;
+      const pageApplications = visibleApplications.slice(startIndex, startIndex + pageSize);
+      tableBody.replaceChildren();
+      pageApplications.forEach((app) => {
+        const row = document.createElement('tr');
+        const selectionCell = document.createElement('td');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'form-check-input application-selection';
+        checkbox.checked = selectedIds.has(app.id);
+        checkbox.setAttribute('aria-label', `Select ${app.reference_number || 'application'}`);
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked) selectedIds.add(app.id);
+          else selectedIds.delete(app.id);
+          updateSelectionTools(pageApplications);
+        });
+        selectionCell.appendChild(checkbox);
+        const referenceCell = document.createElement('td');
+        const reference = document.createElement('strong');
+        reference.textContent = app.reference_number || '—';
+        referenceCell.appendChild(reference);
+
+        const applicantCell = document.createElement('td');
+        const applicantName = document.createElement('span');
+        applicantName.textContent = app.applicant_name || 'Unnamed applicant';
+        const applicantEmail = document.createElement('span');
+        applicantEmail.className = 'muted d-block';
+        applicantEmail.textContent = app.email || 'No email';
+        applicantCell.append(applicantName, applicantEmail);
+
+        const programCell = document.createElement('td');
+        const programBadge = document.createElement('span');
+        programBadge.className = 'badge bg-light text-dark';
+        programBadge.textContent = app.program_type || '—';
+        programCell.appendChild(programBadge);
+
+        const statusCell = document.createElement('td');
+        const statusBadge = document.createElement('span');
+        statusBadge.className = 'badge bg-primary-subtle text-primary';
+        statusBadge.textContent = app.status || '—';
+        statusCell.appendChild(statusBadge);
+
+        const submittedCell = document.createElement('td');
+        submittedCell.textContent = app.submitted_at ? new Date(app.submitted_at).toLocaleDateString() : '—';
+
+        const actionCell = document.createElement('td');
+        const reviewButton = document.createElement('button');
+        reviewButton.type = 'button';
+        reviewButton.className = 'btn btn-sm btn-outline-primary';
+        reviewButton.textContent = 'Review';
+        reviewButton.addEventListener('click', () => openApplication(app));
+        actionCell.appendChild(reviewButton);
+
+        row.append(selectionCell, referenceCell, applicantCell, programCell, statusCell, submittedCell, actionCell);
+        tableBody.appendChild(row);
+      });
+
+      const resultStart = visibleApplications.length ? startIndex + 1 : 0;
+      const resultEnd = Math.min(startIndex + pageSize, visibleApplications.length);
+      document.getElementById('resultsSummary').textContent = `Showing ${resultStart}-${resultEnd} of ${visibleApplications.length} filtered applications`;
+      document.getElementById('pageSummary').textContent = `Page ${currentPage} of ${pageCount}`;
+      document.getElementById('previousPage').disabled = currentPage <= 1;
+      document.getElementById('nextPage').disabled = currentPage >= pageCount;
+      updateSelectionTools(pageApplications);
+    }
+
+    function updateSelectionTools(pageApplications) {
+      const selectedCount = selectedIds.size;
+      document.getElementById('selectionSummary').textContent = selectedCount ? `${selectedCount} selected` : 'Select visible applications';
+      document.getElementById('bulkStatus').disabled = selectedCount === 0;
+      document.getElementById('applyBulkStatus').disabled = selectedCount === 0;
+      document.getElementById('deleteSelected').disabled = selectedCount === 0;
+      const selectVisible = document.getElementById('selectVisible');
+      const visibleSelectedCount = pageApplications.filter((app) => selectedIds.has(app.id)).length;
+      selectVisible.checked = pageApplications.length > 0 && visibleSelectedCount === pageApplications.length;
+      selectVisible.indeterminate = visibleSelectedCount > 0 && visibleSelectedCount < pageApplications.length;
+      const batchCount = yearFilter.value ? allApplications.filter((app) => String(app.intake_year || app.form_data?.intake_year || '') === yearFilter.value).length : 0;
+      const deleteBatchButton = document.getElementById('deleteYearBatch');
+      deleteBatchButton.disabled = !yearFilter.value || batchCount === 0;
+      deleteBatchButton.textContent = yearFilter.value ? `Delete ${batchCount} from ${yearFilter.value}` : 'Delete year batch';
+    }
+
+    function showNotice(message, type) {
+      dashboardNotice.textContent = message;
+      dashboardNotice.className = `alert alert-${type}`;
+      dashboardNotice.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function getFilteredSubscribers() {
+      const searchTerm = document.getElementById('subscriberSearch').value.trim().toLowerCase();
+      const interest = document.getElementById('subscriberInterestFilter').value;
+      const status = document.getElementById('subscriberStatusFilter').value;
+      return allSubscribers.filter((subscriber) => {
+        const searchableText = [subscriber.full_name, subscriber.email].join(' ').toLowerCase();
+        return (!searchTerm || searchableText.includes(searchTerm))
+          && (!interest || subscriber.interest_area === interest)
+          && (!status || subscriber.status === status);
+      });
+    }
+
+    async function loadSubscribers() {
+      const { data, error } = await supabase.from('newsletter_subscribers').select('*').order('subscribed_at', { ascending: false });
+      if (error) {
+        showNotice('Unable to load newsletter subscribers. Please refresh and try again.', 'danger');
+        return;
+      }
+      allSubscribers.splice(0, allSubscribers.length, ...(data || []));
+      subscribersLoaded = true;
+      renderSubscribers();
+      updateCampaignAudiencePreview();
+    }
+
+    function getCampaignAudienceCount(interestArea) {
+      return allSubscribers.filter((subscriber) => subscriber.status === 'active'
+        && subscriber.consent_given === true
+        && subscriber.confirmed_at
+        && (interestArea === 'general' || subscriber.interest_area === 'general' || subscriber.interest_area === interestArea)).length;
+    }
+
+    function updateCampaignAudiencePreview() {
+      const interestArea = document.getElementById('campaignInterest').value;
+      const recipientCount = getCampaignAudienceCount(interestArea);
+      document.getElementById('campaignAudiencePreview').textContent = `${recipientCount} eligible recipient${recipientCount === 1 ? '' : 's'}`;
+    }
+
+    async function loadNewsletterMode() {
+      const notice = document.getElementById('newsletterModeNotice');
+      try {
+        const mode = await invokeNewsletterFunction('get_mode');
+        liveCampaignSendingEnabled = mode.live_sends_enabled === true;
+        notice.className = liveCampaignSendingEnabled ? 'alert alert-warning' : 'alert alert-info';
+        notice.textContent = liveCampaignSendingEnabled
+          ? 'Live sending is enabled. Review the audience and content carefully before starting a campaign.'
+          : 'Test mode: test emails are available, but campaign sends are locked until explicitly enabled in Supabase secrets.';
+      } catch (error) {
+        liveCampaignSendingEnabled = false;
+        notice.className = 'alert alert-warning';
+        notice.textContent = 'Could not verify send mode. Campaign sends remain locked; test emails may still be used.';
+      }
+      newsletterModeLoaded = true;
+      renderCampaigns();
+    }
+
+    async function invokeNewsletterFunction(action, payload = {}) {
+      const { data, error } = await supabase.functions.invoke('newsletter', { body: { action, ...payload } });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    }
+
+    async function loadCampaigns() {
+      const { data, error } = await supabase.from('newsletter_campaigns').select('*').order('created_at', { ascending: false });
+      if (error) {
+        showNotice('Unable to load newsletter campaigns. Check that the latest schema is applied.', 'danger');
+        return;
+      }
+      allCampaigns.splice(0, allCampaigns.length, ...(data || []));
+      campaignsLoaded = true;
+      renderCampaigns();
+    }
+
+    function renderCampaigns() {
+      const campaignBody = document.getElementById('campaignTableBody');
+      campaignBody.replaceChildren();
+      allCampaigns.forEach((campaign) => {
+        const row = document.createElement('tr');
+        const subjectCell = document.createElement('td');
+        subjectCell.textContent = campaign.subject;
+        const audienceCell = document.createElement('td');
+        audienceCell.textContent = campaign.interest_area;
+        const statusCell = document.createElement('td');
+        statusCell.textContent = campaign.status;
+        const sentCell = document.createElement('td');
+        sentCell.textContent = `${campaign.sent_count || 0} / ${campaign.recipient_count || 0}`;
+        const failedCell = document.createElement('td');
+        failedCell.textContent = campaign.failed_count || 0;
+        const createdCell = document.createElement('td');
+        createdCell.textContent = campaign.created_at ? new Date(campaign.created_at).toLocaleDateString() : '—';
+        const actionsCell = document.createElement('td');
+        actionsCell.className = 'text-nowrap';
+
+        const testButton = document.createElement('button');
+        testButton.type = 'button';
+        testButton.className = 'btn btn-sm btn-outline-secondary me-1';
+        testButton.textContent = 'Test';
+        testButton.addEventListener('click', () => sendCampaignTest(campaign.id));
+        actionsCell.appendChild(testButton);
+
+        if (campaign.status !== 'sending') {
+          const deleteButton = document.createElement('button');
+          deleteButton.type = 'button';
+          deleteButton.className = 'btn btn-sm btn-outline-danger';
+          deleteButton.textContent = 'Delete';
+          deleteButton.addEventListener('click', () => deleteCampaign(campaign));
+          actionsCell.appendChild(deleteButton);
+        }
+
+        if (campaign.status === 'draft' || campaign.status === 'sending') {
+          const sendButton = document.createElement('button');
+          sendButton.type = 'button';
+          sendButton.className = 'btn btn-sm btn-primary';
+          sendButton.textContent = campaign.status === 'draft' ? 'Start sending' : 'Send next batch';
+          sendButton.disabled = !liveCampaignSendingEnabled || (campaign.status === 'draft' && getCampaignAudienceCount(campaign.interest_area) === 0);
+          sendButton.addEventListener('click', () => sendCampaignBatch(campaign));
+          actionsCell.appendChild(sendButton);
+        } else if ((campaign.status === 'partial' || campaign.status === 'failed') && campaign.failed_count > 0) {
+          const retryButton = document.createElement('button');
+          retryButton.type = 'button';
+          retryButton.className = 'btn btn-sm btn-outline-primary';
+          retryButton.textContent = 'Retry failed';
+          retryButton.addEventListener('click', () => retryCampaignBatch(campaign));
+          actionsCell.appendChild(retryButton);
+        }
+
+        row.append(subjectCell, audienceCell, statusCell, sentCell, failedCell, createdCell, actionsCell);
+        campaignBody.appendChild(row);
+      });
+      if (!allCampaigns.length) {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = 7;
+        cell.className = 'muted text-center py-4';
+        cell.textContent = 'No campaigns yet.';
+        row.appendChild(cell);
+        campaignBody.appendChild(row);
+      }
+    }
+
+    async function deleteCampaign(campaign) {
+      if (campaign.status === 'sending') return;
+      const confirmed = window.confirm(`Permanently delete campaign “${campaign.subject}” and its delivery history? This cannot be undone.`);
+      if (!confirmed) return;
+
+      const { data, error } = await supabase.from('newsletter_campaigns')
+        .delete()
+        .eq('id', campaign.id)
+        .neq('status', 'sending')
+        .select('id')
+        .maybeSingle();
+      if (error || !data) {
+        showNotice('Campaign was not deleted. It may have started sending; refresh campaign history and try again.', 'danger');
+        return;
+      }
+
+      const campaignIndex = allCampaigns.findIndex((item) => item.id === campaign.id);
+      if (campaignIndex !== -1) allCampaigns.splice(campaignIndex, 1);
+      renderCampaigns();
+      showNotice('Campaign and its delivery history deleted.', 'success');
+    }
+
+    async function saveCampaignDraft(event) {
+      event.preventDefault();
+      const form = document.getElementById('campaignForm');
+      const message = document.getElementById('campaignFormMessage');
+      if (!form.reportValidity()) return;
+      const button = document.getElementById('saveCampaignDraft');
+      button.disabled = true;
+      message.textContent = 'Saving draft...';
+      try {
+        const result = await invokeNewsletterFunction('create_campaign', {
+          subject: document.getElementById('campaignSubject').value.trim(),
+          body_text: document.getElementById('campaignBody').value.trim(),
+          interest_area: document.getElementById('campaignInterest').value
+        });
+        selectedCampaignId = result.campaign.id;
+        document.getElementById('sendCampaignTest').disabled = false;
+        message.textContent = 'Draft saved. Send a test before starting the campaign.';
+        await loadCampaigns();
+      } catch (error) {
+        message.textContent = 'Unable to save the draft. Confirm the newsletter function is deployed and try again.';
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    async function sendCampaignTest(campaignId) {
+      const email = document.getElementById('campaignTestEmail').value.trim().toLowerCase();
+      const message = document.getElementById('campaignFormMessage');
+      if (!email) {
+        message.textContent = 'Enter a test recipient email first.';
+        document.getElementById('campaignTestEmail').focus();
+        return;
+      }
+      message.textContent = 'Sending test email...';
+      try {
+        await invokeNewsletterFunction('send_test', { campaign_id: campaignId, email });
+        message.textContent = `Test email sent to ${email}.`;
+      } catch (error) {
+        message.textContent = 'Test send failed. Check Brevo sender verification and function secrets.';
+      }
+    }
+
+    async function sendCampaignBatch(campaign) {
+      if (!liveCampaignSendingEnabled) {
+        document.getElementById('campaignFormMessage').textContent = 'Live campaign sending is locked. Send a test email while the dashboard is in test mode.';
+        return;
+      }
+      const eligibleCount = campaign.recipient_count || getCampaignAudienceCount(campaign.interest_area);
+      if (!window.confirm(`Start or continue “${campaign.subject}” for up to ${eligibleCount} confirmed subscribers? This sends real email.`)) return;
+      await processCampaignBatch(campaign.id, 'send_campaign');
+    }
+
+    async function retryCampaignBatch(campaign) {
+      if (!liveCampaignSendingEnabled) {
+        document.getElementById('campaignFormMessage').textContent = 'Live campaign sending is locked. Enable it in Supabase secrets before retrying recipients.';
+        return;
+      }
+      const failedCount = campaign.failed_count || 0;
+      if (!window.confirm(`Retry the ${failedCount} failed email${failedCount === 1 ? '' : 's'} for “${campaign.subject}”?`)) return;
+      await processCampaignBatch(campaign.id, 'retry_failed');
+    }
+
+    async function processCampaignBatch(campaignId, action) {
+      const message = document.getElementById('campaignFormMessage');
+      message.textContent = 'Processing one batch...';
+      try {
+        const result = await invokeNewsletterFunction(action, { campaign_id: campaignId });
+        message.textContent = result.status === 'sending'
+          ? `${result.sent_count} sent; ${result.failed_count} failed. Continue with the next batch from Campaign history.`
+          : `Campaign ${result.status}: ${result.sent_count} sent, ${result.failed_count} failed.`;
+        await loadCampaigns();
+      } catch (error) {
+        message.textContent = 'Campaign action failed. Check the function logs and Brevo configuration.';
+      }
+    }
+
+    function renderSubscribers() {
+      const filtered = getFilteredSubscribers();
+      const subscriberBody = document.getElementById('subscriberTableBody');
+      subscriberBody.replaceChildren();
+      filtered.forEach((subscriber) => {
+        const row = document.createElement('tr');
+        const nameCell = document.createElement('td');
+        nameCell.textContent = subscriber.full_name || 'Not provided';
+        const emailCell = document.createElement('td');
+        emailCell.textContent = subscriber.email || '—';
+        const interestCell = document.createElement('td');
+        interestCell.textContent = subscriber.interest_area || 'general';
+        const dateCell = document.createElement('td');
+        dateCell.textContent = subscriber.subscribed_at ? new Date(subscriber.subscribed_at).toLocaleDateString() : '—';
+        const statusCell = document.createElement('td');
+        const statusSelect = document.createElement('select');
+        statusSelect.className = 'form-select form-select-sm';
+        ['pending_confirmation', 'active', 'unsubscribed', 'bounced'].forEach((status) => statusSelect.add(new Option(status.replace('_', ' '), status)));
+        statusSelect.value = subscriber.status;
+        statusCell.appendChild(statusSelect);
+        const actionCell = document.createElement('td');
+        const saveButton = document.createElement('button');
+        saveButton.type = 'button';
+        saveButton.className = 'btn btn-sm btn-outline-primary';
+        saveButton.textContent = 'Save';
+        saveButton.disabled = statusSelect.value === subscriber.status;
+        statusSelect.addEventListener('change', () => { saveButton.disabled = statusSelect.value === subscriber.status; });
+        saveButton.addEventListener('click', async () => {
+          saveButton.disabled = true;
+          const { error } = await supabase.from('newsletter_subscribers').update({ status: statusSelect.value }).eq('id', subscriber.id);
+          if (error) {
+            saveButton.disabled = false;
+            showNotice('Could not update subscriber status. Please try again.', 'danger');
+            return;
+          }
+          subscriber.status = statusSelect.value;
+          showNotice('Subscriber status updated.', 'success');
+          renderSubscribers();
+        });
+        actionCell.appendChild(saveButton);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'btn btn-sm btn-outline-danger ms-1';
+        deleteButton.textContent = 'Delete';
+        deleteButton.addEventListener('click', async () => {
+          const confirmed = window.confirm(`Permanently delete subscriber ${subscriber.email} and their delivery history? This cannot be undone.`);
+          if (!confirmed) return;
+
+          deleteButton.disabled = true;
+          const { data, error } = await supabase.from('newsletter_subscribers')
+            .delete()
+            .eq('id', subscriber.id)
+            .select('id')
+            .maybeSingle();
+          if (error || !data) {
+            deleteButton.disabled = false;
+            showNotice('Could not delete this subscriber. Refresh the list and try again.', 'danger');
+            return;
+          }
+
+          const subscriberIndex = allSubscribers.findIndex((item) => item.id === subscriber.id);
+          if (subscriberIndex !== -1) allSubscribers.splice(subscriberIndex, 1);
+          renderSubscribers();
+          showNotice('Subscriber and associated delivery history deleted.', 'success');
+        });
+        actionCell.appendChild(deleteButton);
+        row.append(nameCell, emailCell, interestCell, dateCell, statusCell, actionCell);
+        subscriberBody.appendChild(row);
+      });
+
+      document.getElementById('subscriberTotal').textContent = allSubscribers.length;
+      document.getElementById('subscriberActive').textContent = allSubscribers.filter((item) => item.status === 'active').length;
+      document.getElementById('subscriberPending').textContent = allSubscribers.filter((item) => item.status === 'pending_confirmation').length;
+      document.getElementById('subscriberUnsubscribed').textContent = allSubscribers.filter((item) => item.status === 'unsubscribed').length;
+      document.getElementById('subscriberResults').textContent = `Showing ${filtered.length} of ${allSubscribers.length} subscribers`;
+      updateCampaignAudiencePreview();
+    }
+
+    function exportSubscribers() {
+      const columns = ['Name', 'Email', 'Interest', 'Status', 'Subscribed'];
+      const rows = getFilteredSubscribers().map((subscriber) => [subscriber.full_name, subscriber.email, subscriber.interest_area, subscriber.status, subscriber.subscribed_at]);
+      const escapeCsv = (value) => {
+        let text = String(value ?? '');
+        if (/^[=+\-@]/.test(text)) text = `'${text}`;
+        return `"${text.replaceAll('"', '""')}"`;
+      };
+      const csv = [columns, ...rows].map((row) => row.map(escapeCsv).join(',')).join('\r\n');
+      const objectUrl = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+      const downloadLink = document.createElement('a');
+      downloadLink.href = objectUrl;
+      downloadLink.download = `lawrence-newsletter-${new Date().toISOString().slice(0, 10)}.csv`;
+      downloadLink.click();
+      URL.revokeObjectURL(objectUrl);
+    }
+
+    async function showDashboardView(viewName) {
+      const showNewsletter = viewName === 'newsletter';
+      document.getElementById('applicationsView').classList.toggle('d-none', showNewsletter);
+      document.getElementById('newsletterView').classList.toggle('d-none', !showNewsletter);
+      document.getElementById('refreshButton').classList.toggle('d-none', showNewsletter);
+      document.getElementById('exportButton').classList.toggle('d-none', showNewsletter);
+      document.getElementById('applicationsTab').setAttribute('aria-pressed', String(!showNewsletter));
+      document.getElementById('newsletterTab').setAttribute('aria-pressed', String(showNewsletter));
+      if (showNewsletter) {
+        if (!subscribersLoaded) await loadSubscribers();
+        if (!campaignsLoaded) await loadCampaigns();
+        if (!newsletterModeLoaded) await loadNewsletterMode();
+      }
+    }
+
+    function exportApplications() {
+      const columns = ['Reference', 'Applicant', 'Email', 'Phone', 'Program', 'Status', 'Intake Year', 'Submitted'];
+      const rows = getFilteredApplications().map((app) => [
+        app.reference_number, app.applicant_name, app.email, app.phone, app.program_type, app.status,
+        app.intake_year || app.form_data?.intake_year, app.submitted_at
+      ]);
+      const escapeCsv = (value) => {
+        let text = String(value ?? '');
+        if (/^[=+\-@]/.test(text)) text = `'${text}`;
+        return `"${text.replaceAll('"', '""')}"`;
+      };
+      const csv = [columns, ...rows].map((row) => row.map(escapeCsv).join(',')).join('\r\n');
+      const objectUrl = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+      const downloadLink = document.createElement('a');
+      downloadLink.href = objectUrl;
+      downloadLink.download = `lawrence-applications-${new Date().toISOString().slice(0, 10)}.csv`;
+      downloadLink.click();
+      URL.revokeObjectURL(objectUrl);
+    }
+
+    async function updateSelectedStatus() {
+      const ids = [...selectedIds];
+      if (!ids.length) return;
+      const { error } = await supabase.from('applications').update({ status: document.getElementById('bulkStatus').value }).in('id', ids);
+      if (error) {
+        showNotice('Could not update the selected applications. Check admin access and try again.', 'danger');
+        return;
+      }
+      selectedIds.clear();
+      showNotice(`${ids.length} application${ids.length === 1 ? '' : 's'} updated.`, 'success');
+      await loadApplications();
+    }
+
+    function requestDelete(applications, mode) {
+      pendingDeleteApplications = applications;
+      pendingDeletePhrase = mode === 'batch' ? `DELETE ${yearFilter.value}` : mode === 'single' ? 'DELETE' : `DELETE ${applications.length}`;
+      document.getElementById('deleteConfirmationTitle').textContent = mode === 'batch' ? `Delete ${yearFilter.value} intake batch?` : 'Confirm application deletion';
+      document.getElementById('deleteConfirmationDescription').textContent = mode === 'batch'
+        ? `${applications.length} application records from intake year ${yearFilter.value} and their stored files will be deleted permanently.`
+        : `${applications.length} selected application record${applications.length === 1 ? '' : 's'} and their stored files will be deleted permanently.`;
+      document.getElementById('deleteConfirmationPhrase').textContent = pendingDeletePhrase;
+      deleteConfirmationInput.value = '';
+      confirmDeleteButton.disabled = true;
+      deleteConfirmationDialog.showModal();
+      deleteConfirmationInput.focus();
+    }
+
+    async function deleteApplications(applications) {
+      if (!applications.length) return;
+      confirmDeleteButton.disabled = true;
+      confirmDeleteButton.textContent = 'Deleting...';
+      const ids = applications.map((app) => app.id);
+      const { error } = await supabase.from('applications').delete().in('id', ids);
+      if (error) {
+        confirmDeleteButton.disabled = false;
+        confirmDeleteButton.textContent = 'Delete permanently';
+        showNotice('Delete failed. Apply the admin-only delete policies from supabase/schema.sql, then try again.', 'danger');
+        return;
+      }
+
+      const filePaths = applications.flatMap((app) => (app.form_data?.documents || []).map((file) => file.path).filter(Boolean));
+      let fileCleanupFailed = false;
+      if (filePaths.length) {
+        const { error: storageError } = await supabase.storage.from('application-documents').remove(filePaths);
+        fileCleanupFailed = Boolean(storageError);
+      }
+      ids.forEach((id) => selectedIds.delete(id));
+      pendingDeleteApplications = [];
+      deleteConfirmationDialog.close();
+      if (applicationDialog.open) applicationDialog.close();
+      confirmDeleteButton.textContent = 'Delete permanently';
+      showNotice(fileCleanupFailed ? 'Records deleted, but some files could not be removed from Storage.' : `${ids.length} application record${ids.length === 1 ? '' : 's'} deleted.`, fileCleanupFailed ? 'warning' : 'success');
+      await loadApplications();
+    }
+
+    function openApplication(app) {
+      selectedApplication = app;
+      document.getElementById('detailReference').textContent = app.reference_number || 'Application details';
+      detailStatus.value = app.status;
+      detailMessage.textContent = '';
+      detailFields.replaceChildren();
+
+      const coreFields = [
+        ['Applicant', app.applicant_name],
+        ['Email', app.email],
+        ['Phone', app.phone],
+        ['Program category', app.program_type],
+        ['Application status', app.status],
+        ['Submitted', app.submitted_at ? new Date(app.submitted_at).toLocaleString() : 'Not provided'],
+        ['Intake year', app.intake_year]
+      ];
+      const formData = app.form_data || {};
+      const excludedKeys = new Set(['documents', 'reference_number', 'program_type', 'applicant_name', 'email', 'phone']);
+      const formFields = Object.entries(formData).filter(([key]) => !excludedKeys.has(key));
+
+      [...coreFields, ...formFields.map(([key, value]) => [key.replaceAll('_', ' '), value])].forEach(([label, value]) => {
+        const field = document.createElement('div');
+        field.className = 'detail-field';
+        const fieldLabel = document.createElement('strong');
+        fieldLabel.textContent = label;
+        const fieldValue = document.createElement('span');
+        fieldValue.textContent = value === null || value === undefined || value === '' ? 'Not provided' : String(value);
+        field.append(fieldLabel, fieldValue);
+        detailFields.appendChild(field);
+      });
+
+      renderDocuments(formData.documents || []);
+      applicationDialog.showModal();
+    }
+
+    function renderDocuments(documents) {
+      documentList.replaceChildren();
+      if (!documents.length) {
+        const emptyItem = document.createElement('li');
+        emptyItem.textContent = 'No documents attached.';
+        documentList.appendChild(emptyItem);
+        return;
+      }
+
+      documents.forEach((file) => {
+        const item = document.createElement('li');
+        const label = document.createElement('span');
+        label.textContent = `${file.label || 'Document'}: ${file.file_name || 'Uploaded file'} `;
+        const linkButton = document.createElement('button');
+        linkButton.type = 'button';
+        linkButton.className = 'btn btn-sm btn-outline-secondary';
+        linkButton.textContent = 'Prepare secure link';
+        linkButton.addEventListener('click', async () => {
+          linkButton.disabled = true;
+          linkButton.textContent = 'Preparing...';
+          const { data, error } = await supabase.storage
+            .from('application-documents')
+            .createSignedUrl(file.path, 300);
+          if (error) {
+            detailMessage.textContent = 'Unable to open this document. Check Storage access and try again.';
+            linkButton.disabled = false;
+            linkButton.textContent = 'Try again';
+            return;
+          }
+          const link = document.createElement('a');
+          link.className = 'btn btn-sm btn-outline-secondary';
+          link.href = data.signedUrl;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          link.textContent = 'Open document (5 min link)';
+          linkButton.replaceWith(link);
+        });
+        item.append(label, linkButton);
+        documentList.appendChild(item);
+      });
+    }
+
+    document.getElementById('closeApplicationDialog').addEventListener('click', () => applicationDialog.close());
+
+    saveStatusButton.addEventListener('click', async () => {
+      if (!selectedApplication) return;
+      saveStatusButton.disabled = true;
+      detailMessage.textContent = 'Saving status...';
+      const { error } = await supabase
+        .from('applications')
+        .update({ status: detailStatus.value })
+        .eq('id', selectedApplication.id);
+      saveStatusButton.disabled = false;
+      if (error) {
+        detailMessage.textContent = 'Unable to update status. Please try again.';
+        return;
+      }
+      detailMessage.textContent = 'Status updated.';
+      selectedApplication.status = detailStatus.value;
+      await loadApplications();
+    });
+
+    document.getElementById('deleteSingleApplication').addEventListener('click', () => {
+      if (!selectedApplication) return;
+      applicationDialog.close();
+      requestDelete([selectedApplication], 'single');
+    });
+    deleteConfirmationInput.addEventListener('input', () => {
+      confirmDeleteButton.disabled = deleteConfirmationInput.value.trim() !== pendingDeletePhrase;
+    });
+    confirmDeleteButton.addEventListener('click', () => deleteApplications(pendingDeleteApplications));
+    document.getElementById('cancelDeleteButton').addEventListener('click', () => deleteConfirmationDialog.close());
+    document.getElementById('selectVisible').addEventListener('change', (event) => {
+      const pageSize = Number(document.getElementById('pageSize').value);
+      const pageApplications = visibleApplications.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+      pageApplications.forEach((app) => event.target.checked ? selectedIds.add(app.id) : selectedIds.delete(app.id));
+      renderApplications();
+    });
+    document.getElementById('applyBulkStatus').addEventListener('click', updateSelectedStatus);
+    document.getElementById('deleteSelected').addEventListener('click', () => {
+      const selected = allApplications.filter((app) => selectedIds.has(app.id));
+      if (selected.length) requestDelete(selected, 'selected');
+    });
+    document.getElementById('deleteYearBatch').addEventListener('click', () => {
+      const year = yearFilter.value;
+      const batch = allApplications.filter((app) => String(app.intake_year || app.form_data?.intake_year || '') === year);
+      if (year && batch.length) requestDelete(batch, 'batch');
+    });
+    [programFilter, statusFilter, yearFilter, sortFilter].forEach((control) => control.addEventListener('change', () => { currentPage = 1; renderApplications(); }));
+    searchInput.addEventListener('input', () => { currentPage = 1; renderApplications(); });
+    document.getElementById('pageSize').addEventListener('change', () => { currentPage = 1; renderApplications(); });
+    document.getElementById('previousPage').addEventListener('click', () => { currentPage -= 1; renderApplications(); });
+    document.getElementById('nextPage').addEventListener('click', () => { currentPage += 1; renderApplications(); });
+    document.getElementById('refreshButton').addEventListener('click', loadApplications);
+    document.getElementById('exportButton').addEventListener('click', exportApplications);
+    document.getElementById('applicationsTab').addEventListener('click', () => showDashboardView('applications'));
+    document.getElementById('newsletterTab').addEventListener('click', () => showDashboardView('newsletter'));
+    document.getElementById('refreshSubscribers').addEventListener('click', loadSubscribers);
+    document.getElementById('exportSubscribers').addEventListener('click', exportSubscribers);
+    document.getElementById('refreshCampaigns').addEventListener('click', loadCampaigns);
+    document.getElementById('campaignForm').addEventListener('submit', saveCampaignDraft);
+    document.getElementById('campaignInterest').addEventListener('change', updateCampaignAudiencePreview);
+    document.getElementById('sendCampaignTest').addEventListener('click', () => {
+      if (selectedCampaignId) sendCampaignTest(selectedCampaignId);
+    });
+    document.getElementById('campaignTestEmail').addEventListener('input', () => {
+      document.getElementById('sendCampaignTest').disabled = !selectedCampaignId || !document.getElementById('campaignTestEmail').validity.valid;
+    });
+    ['campaignSubject', 'campaignBody'].forEach((id) => {
+      document.getElementById(id).addEventListener('input', () => {
+        selectedCampaignId = null;
+        document.getElementById('sendCampaignTest').disabled = true;
+      });
+    });
+    document.getElementById('campaignInterest').addEventListener('change', () => {
+      selectedCampaignId = null;
+      document.getElementById('sendCampaignTest').disabled = true;
+    });
+    ['subscriberSearch', 'subscriberInterestFilter', 'subscriberStatusFilter'].forEach((id) => {
+      const control = document.getElementById(id);
+      control.addEventListener(id === 'subscriberSearch' ? 'input' : 'change', renderSubscribers);
+    });
+
+    button.addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = 'login.html';
+    });
+
+    ensureAuthorized().then((ok) => {
+      if (ok) loadApplications();
+    });
+  </script>
+</body>
+</html>

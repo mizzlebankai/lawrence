@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lawrence Admin Login</title>
+  <link rel="icon" href="../assets/lawrence-logo.png">
+  <link rel="stylesheet" href="../vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    body {
+      background-color: #eaf0f5;
+      background-image: url("../assets/lawrence-logo.png"), repeating-linear-gradient(135deg, rgba(21,61,99,0.025) 0 1px, transparent 1px 34px);
+      background-repeat: no-repeat, repeat;
+      background-position: 76% center, 0 0;
+      background-size: min(58vw, 760px) auto, 34px 34px;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+    }
+    .admin-card {
+      width: min(100%, 480px);
+      margin-right: auto;
+      margin-left: clamp(0px, 7vw, 7rem);
+      background: rgba(255,255,255,0.98);
+      border: 1px solid rgba(21,61,99,0.12);
+      border-radius: 8px;
+      box-shadow: 0 20px 48px rgba(21,61,99,0.16);
+      padding: 2rem;
+    }
+    .admin-card.error-shake { animation: error-shake 260ms ease-in-out; }
+    .brand-lockup {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .brand-lockup img {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+    }
+    .brand-lockup h1 {
+      margin: 0;
+      font-size: 1.7rem;
+      color: var(--navy-900);
+    }
+    .brand-lockup small {
+      display: block;
+      color: var(--text-soft);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 0.68rem;
+    }
+    .form-control {
+      border-radius: 6px;
+      padding: 0.9rem 1rem;
+    }
+    .login-submit {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 48px;
+      margin-top: 1rem;
+      overflow: hidden;
+      transition: width 220ms ease, min-width 220ms ease, border-radius 220ms ease, padding 220ms ease, background-color 220ms ease;
+    }
+    .button-label { transition: opacity 120ms ease; }
+    .button-spinner,
+    .button-check { display: none; position: absolute; }
+    .button-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.38);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spinner-turn 700ms linear infinite;
+    }
+    .button-check::before {
+      content: "";
+      display: block;
+      width: 9px;
+      height: 16px;
+      border-right: 2px solid #fff;
+      border-bottom: 2px solid #fff;
+      transform: rotate(45deg) translate(-2px, -2px);
+    }
+    .login-submit[data-state="loading"],
+    .login-submit[data-state="success"] {
+      width: 48px;
+      min-width: 48px;
+      min-height: 48px;
+      margin-right: auto;
+      margin-left: auto;
+      padding: 0;
+      border-radius: 50%;
+    }
+    .login-submit[data-state="loading"] .button-label,
+    .login-submit[data-state="success"] .button-label { opacity: 0; }
+    .login-submit[data-state="loading"] .button-spinner,
+    .login-submit[data-state="success"] .button-check { display: block; }
+    .login-submit[data-state="success"] { background: #176548; }
+    .mfa-view[hidden] { display: none; }
+    .mfa-view.view-enter { animation: view-enter 220ms ease both; }
+    .mfa-title { margin: 0 0 0.5rem; color: var(--navy-900); font-size: 1.35rem; }
+    .mfa-description { margin-bottom: 1.25rem; color: var(--text-soft); }
+    .back-link {
+      display: block;
+      margin: 1rem auto 0;
+      padding: 0.25rem;
+      border: 0;
+      background: transparent;
+      color: var(--navy-900);
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+      cursor: pointer;
+    }
+    .status-box {
+      display: none;
+      margin-top: 1rem;
+      padding: 0.8rem 1rem;
+      border-radius: 12px;
+      font-size: 0.92rem;
+    }
+    .status-box.error {
+      display: block;
+      background: rgba(148,31,50,0.08);
+      color: #7c1d2c;
+      border: 1px solid rgba(148,31,50,0.2);
+    }
+    .status-box.success {
+      display: block;
+      background: rgba(24, 124, 77, 0.08);
+      color: #125d42;
+      border: 1px solid rgba(24,124,77,0.2);
+    }
+    .status-box.info {
+      display: block;
+      background: rgba(21,61,99,0.06);
+      color: var(--navy-900);
+      border: 1px solid rgba(21,61,99,0.14);
+    }
+    @keyframes spinner-turn { to { transform: rotate(360deg); } }
+    @keyframes view-enter {
+      from { opacity: 0; transform: translateX(14px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes error-shake {
+      0%, 100% { transform: translateX(0); }
+      30% { transform: translateX(-5px); }
+      60% { transform: translateX(4px); }
+      80% { transform: translateX(-2px); }
+    }
+    @media (max-width: 700px) {
+      body {
+        background-position: center 12%, 0 0;
+        background-size: min(78vw, 360px) auto, 34px 34px;
+        padding: 1.25rem;
+      }
+      .admin-card {
+        margin: 0;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-card">
+    <div class="brand-lockup">
+      <img src="../assets/lawrence-logo.png" alt="Lawrence College crest">
+      <div>
+        <h1>Lawrence</h1>
+        <small>Admin Portal</small>
+      </div>
+    </div>
+
+    <form id="adminLoginForm" class="mfa-view">
+      <div class="mb-3">
+        <label for="email" class="form-label fw-bold">Email</label>
+        <input id="email" name="email" class="form-control" type="email" placeholder="admin@lawrencecollege.edu.gh" required>
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label fw-bold">Password</label>
+        <input id="password" name="password" class="form-control" type="password" placeholder="Enter password" required>
+      </div>
+      <button id="loginSubmit" type="submit" class="btn-lawrence btn-lawrence-gold login-submit" data-state="idle">
+        <span class="button-label">Sign in</span>
+        <span class="button-spinner" aria-hidden="true"></span>
+        <span class="button-check" aria-hidden="true"></span>
+      </button>
+    </form>
+
+    <form id="mfaForm" class="mfa-view" hidden>
+      <h2 class="mfa-title">Two-step verification</h2>
+      <p id="mfaDescription" class="mfa-description">Enter the current 6-digit code from your authenticator app.</p>
+      <label for="mfaCode" class="form-label fw-bold">Authenticator code</label>
+      <input id="mfaCode" name="totp" class="form-control" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" aria-describedby="mfaDescription" required>
+      <button id="mfaSubmit" type="submit" class="btn-lawrence btn-lawrence-gold login-submit" data-state="idle">
+        <span class="button-label">Verify and continue</span>
+        <span class="button-spinner" aria-hidden="true"></span>
+        <span class="button-check" aria-hidden="true"></span>
+      </button>
+      <button id="backToLogin" type="button" class="back-link">Use a different account</button>
+    </form>
+
+    <div id="loginStatus" class="status-box" role="status" aria-live="polite"></div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabaseUrl = 'https://ttjgkfsrkxpxeufkikma.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0amdrZnNya3hweGV1Zmtpa21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3ODAxOTYsImV4cCI6MjEwNjM1NjE5Nn0.WeSQ17D0rjM_Jxltvy1X4sjeFG7lRtRDPUjcUdaw8Uk';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const form = document.getElementById('adminLoginForm');
+    const mfaForm = document.getElementById('mfaForm');
+    const adminCard = document.querySelector('.admin-card');
+    const statusBox = document.getElementById('loginStatus');
+    const mfaCode = document.getElementById('mfaCode');
+    const loginSubmit = document.getElementById('loginSubmit');
+    const mfaSubmit = document.getElementById('mfaSubmit');
+    let mfaFactorId = null;
+
+    function showStatus(message, type) {
+      statusBox.textContent = message;
+      statusBox.className = `status-box ${type || ''}`;
+    }
+
+    function setButtonState(button, state) {
+      button.dataset.state = state;
+      button.disabled = state === 'loading' || state === 'success';
+    }
+
+    function shakeCard() {
+      adminCard.classList.remove('error-shake');
+      void adminCard.offsetWidth;
+      adminCard.classList.add('error-shake');
+    }
+
+    function animateView(view) {
+      view.classList.remove('view-enter');
+      void view.offsetWidth;
+      view.classList.add('view-enter');
+    }
+
+    async function continueToDashboard(button) {
+      setButtonState(button, 'success');
+      showStatus('Verified. Opening the admin dashboard…', 'success');
+      await new Promise((resolve) => setTimeout(resolve, 230));
+      window.location.href = 'dashboard.html';
+    }
+
+    async function getRequiredMfaFactor() {
+      const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (assuranceError) throw assuranceError;
+      if (assurance?.nextLevel !== 'aal2' || assurance.currentLevel === 'aal2') return null;
+
+      const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+      if (factorsError) throw factorsError;
+      const verifiedTotp = (factors?.totp || []).find((factor) => factor.status === 'verified');
+      if (!verifiedTotp) {
+        await supabase.auth.signOut();
+        throw new Error('This account requires multi-factor authentication, but no verified authenticator is available. Contact an administrator.');
+      }
+      return verifiedTotp.id;
+    }
+
+    function showMfaStep(factorId) {
+      mfaFactorId = factorId;
+      form.hidden = true;
+      mfaForm.hidden = false;
+      animateView(mfaForm);
+      setButtonState(loginSubmit, 'idle');
+      showStatus('Password accepted. Complete the second verification step.', 'info');
+      mfaCode.focus();
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        setButtonState(loginSubmit, 'loading');
+        showStatus('Signing in…', 'info');
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) throw error;
+
+        const { data: adminData, error: adminError } = await supabase
+          .from('admin_users')
+          .select('id')
+          .eq('user_id', data.user.id)
+          .eq('is_active', true)
+          .limit(1);
+
+        if (adminError) throw adminError;
+
+        if (!adminData || adminData.length === 0) {
+          await supabase.auth.signOut();
+          throw new Error('This account is not authorised for the Lawrence admin portal.');
+        }
+
+        const requiredFactorId = await getRequiredMfaFactor();
+        if (requiredFactorId) {
+          showMfaStep(requiredFactorId);
+          return;
+        }
+
+        await continueToDashboard(loginSubmit);
+      } catch (error) {
+        setButtonState(loginSubmit, 'idle');
+        shakeCard();
+        showStatus(error.message || 'Unable to sign in right now. Please try again.', 'error');
+      }
+    });
+
+    mfaForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!mfaForm.reportValidity()) return;
+      if (!mfaFactorId) {
+        showStatus('The authenticator step expired. Sign in again to continue.', 'error');
+        shakeCard();
+        return;
+      }
+
+      try {
+        setButtonState(mfaSubmit, 'loading');
+        showStatus('Verifying authenticator code…', 'info');
+        const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: mfaFactorId });
+        if (challengeError) throw challengeError;
+
+        const { error: verifyError } = await supabase.auth.mfa.verify({
+          factorId: mfaFactorId,
+          challengeId: challenge.id,
+          code: mfaCode.value.trim()
+        });
+        if (verifyError) throw verifyError;
+
+        const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (assuranceError) throw assuranceError;
+        if (assurance?.currentLevel !== 'aal2') throw new Error('Authenticator verification was not completed. Try a new code.');
+
+        await continueToDashboard(mfaSubmit);
+      } catch (error) {
+        setButtonState(mfaSubmit, 'idle');
+        mfaCode.select();
+        shakeCard();
+        showStatus(error.message || 'The code could not be verified. Check it and try again.', 'error');
+      }
+    });
+
+    document.getElementById('backToLogin').addEventListener('click', async () => {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        showStatus('Unable to sign out. Please try again.', 'error');
+        shakeCard();
+        return;
+      }
+      mfaFactorId = null;
+      mfaCode.value = '';
+      document.getElementById('password').value = '';
+      mfaForm.hidden = true;
+      form.hidden = false;
+      animateView(form);
+      showStatus('Signed out. Enter your credentials to start again.', 'info');
+      document.getElementById('email').focus();
+    });
+  </script>
+</body>
+</html>
