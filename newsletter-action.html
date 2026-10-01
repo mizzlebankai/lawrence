@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Lawrence Updates</title>
+  <link rel="icon" href="assets/lawrence-logo.png">
+  <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css?v=20260930-newsletter">
+  <style>
+    body { min-height:100vh; display:grid; place-items:center; padding:1.25rem; background:#f4f6f7; }
+    .newsletter-action { width:min(100%,560px); padding:clamp(1.5rem,5vw,3rem); background:#fff; border-top:4px solid var(--maroon); box-shadow:0 18px 44px rgba(13,35,72,.1); }
+    .newsletter-action-brand { display:flex; align-items:center; gap:.9rem; margin-bottom:2rem; }
+    .newsletter-action-brand img { width:52px; height:52px; object-fit:contain; }
+    .newsletter-action-brand strong { display:block; color:var(--navy-900); }
+    .newsletter-action-brand span { display:block; color:var(--text-soft); font-size:.75rem; }
+    #actionMessage { min-height:1.5rem; }
+  </style>
+</head>
+<body>
+  <main class="newsletter-action">
+    <div class="newsletter-action-brand">
+      <img src="assets/lawrence-logo.png" alt="">
+      <div><strong>Lawrence College &amp; SHS</strong><span>Lawrence Updates</span></div>
+    </div>
+    <p id="actionKicker" class="eyebrow mb-2">Email preferences</p>
+    <h1 id="actionHeading" class="font-display h2">Loading your request...</h1>
+    <p id="actionDescription" class="text-secondary">Please wait while we verify your link.</p>
+    <button id="actionButton" type="button" class="btn-lawrence btn-lawrence-gold" disabled>Continue</button>
+    <p id="actionMessage" class="small mt-3 mb-0" role="status" aria-live="polite"></p>
+    <a href="index.html" class="d-inline-block mt-4">Return to Lawrence</a>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const actionParams = new URLSearchParams(window.location.search);
+    const action = actionParams.get('action');
+    const token = actionParams.get('token') || '';
+    const actionButton = document.getElementById('actionButton');
+    const actionMessage = document.getElementById('actionMessage');
+    let newsletterClient = null;
+
+    if (action === 'confirm') {
+      document.getElementById('actionKicker').textContent = 'Subscription confirmation';
+      document.getElementById('actionHeading').textContent = 'Confirm Lawrence updates';
+      document.getElementById('actionDescription').textContent = 'Confirm that you want to receive occasional school and program updates by email.';
+      actionButton.textContent = 'Confirm subscription';
+    } else if (action === 'unsubscribe') {
+      document.getElementById('actionKicker').textContent = 'Email preferences';
+      document.getElementById('actionHeading').textContent = 'Unsubscribe from updates';
+      document.getElementById('actionDescription').textContent = 'You will stop receiving Lawrence newsletter emails. This will not affect admissions messages.';
+      actionButton.textContent = 'Unsubscribe';
+    } else {
+      document.getElementById('actionHeading').textContent = 'This link is not valid';
+      document.getElementById('actionDescription').textContent = 'Open the confirmation or unsubscribe link from a Lawrence email.';
+    }
+
+    if (token && (action === 'confirm' || action === 'unsubscribe') && window.supabase) {
+      newsletterClient = window.supabase.createClient(
+        'https://ttjgkfsrkxpxeufkikma.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0amdrZnNya3hweGV1Zmtpa21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3ODAxOTYsImV4cCI6MjEwNjM1NjE5Nn0.WeSQ17D0rjM_Jxltvy1X4sjeFG7lRtRDPUjcUdaw8Uk'
+      );
+      actionButton.disabled = false;
+      history.replaceState(null, '', `${window.location.pathname}?action=${encodeURIComponent(action)}`);
+    } else if (action === 'confirm' || action === 'unsubscribe') {
+      actionMessage.textContent = 'This link is incomplete or the newsletter service is unavailable.';
+    }
+
+    actionButton.addEventListener('click', async () => {
+      if (!newsletterClient || !token) return;
+      actionButton.disabled = true;
+      actionMessage.textContent = 'Processing...';
+      const { data, error } = await newsletterClient.functions.invoke('newsletter', { body: { action, token } });
+      if (error) {
+        actionMessage.textContent = 'We could not complete this request. The link may have expired; please try again or contact Lawrence.';
+        actionButton.disabled = false;
+        return;
+      }
+      document.getElementById('actionHeading').textContent = action === 'confirm' ? 'Subscription confirmed' : 'You are unsubscribed';
+      document.getElementById('actionDescription').textContent = data?.message || 'Your email preferences have been updated.';
+      actionButton.hidden = true;
+      actionMessage.textContent = '';
+    });
+  </script>
+</body>
+</html>

@@ -16,6 +16,8 @@ Thumbs.db
 *.log
 npm-debug.log*
 .cache/
+.playwright-mcp/
+supabase/.temp/
 
 # Build artifacts
 dist/
