@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#153d63">
+  <title>Content Studio | Lawrence College &amp; SHS</title>
+  <link rel="icon" href="../assets/lawrence-logo.png">
+  <link rel="stylesheet" href="../vendor/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="../vendor/bootstrap-icons/bootstrap-icons.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/content-admin.css">
+</head>
+<body class="cms-body">
+  <header class="cms-topbar">
+    <a class="cms-brand" href="../index.html" aria-label="Lawrence College and SHS home">
+      <img src="../assets/lawrence-logo.png" alt="">
+      <span><strong>Lawrence</strong><small>Content Studio</small></span>
+    </a>
+    <div class="cms-top-actions">
+      <a class="btn btn-sm btn-outline-secondary" href="../index.html"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i><span>View site</span></a>
+      <a class="btn btn-sm btn-outline-secondary" href="dashboard.html"><i class="bi bi-grid" aria-hidden="true"></i><span>Admin home</span></a>
+      <button class="btn btn-sm btn-outline-danger" id="signOutButton" type="button"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Sign out</span></button>
+    </div>
+  </header>
+
+  <main class="cms-main">
+    <section class="cms-heading">
+      <div>
+        <p class="cms-eyebrow">Website content</p>
+        <h1>Content Studio</h1>
+        <p class="cms-subtitle">Manage published stories, school information, leadership, and gallery media.</p>
+      </div>
+      <span class="cms-connection" id="connectionStatus"><i aria-hidden="true"></i>Connecting</span>
+    </section>
+
+    <div id="cmsNotice" class="cms-notice" role="status" aria-live="polite" hidden></div>
+
+    <nav class="cms-tabs" aria-label="Content types">
+      <button type="button" class="cms-tab is-active" data-type="posts" aria-pressed="true"><i class="bi bi-newspaper" aria-hidden="true"></i>News &amp; events</button>
+      <button type="button" class="cms-tab" data-type="sections" aria-pressed="false"><i class="bi bi-layout-text-window" aria-hidden="true"></i>Page sections</button>
+      <button type="button" class="cms-tab" data-type="leadership" aria-pressed="false"><i class="bi bi-people" aria-hidden="true"></i>Leadership</button>
+      <button type="button" class="cms-tab" data-type="gallery" aria-pressed="false"><i class="bi bi-images" aria-hidden="true"></i>Gallery</button>
+    </nav>
+
+    <section class="cms-workspace" aria-label="Content editor">
+      <aside class="cms-library" aria-label="Content list">
+        <div class="cms-library-head">
+          <div>
+            <h2 id="libraryTitle">News &amp; events</h2>
+            <span id="itemCount" class="cms-muted">Loading content...</span>
+          </div>
+          <button class="btn btn-primary btn-sm" id="newItemButton" type="button"><i class="bi bi-plus-lg" aria-hidden="true"></i><span>New</span></button>
+        </div>
+        <label class="cms-search">
+          <i class="bi bi-search" aria-hidden="true"></i>
+          <span class="visually-hidden">Search content</span>
+          <input id="searchInput" type="search" placeholder="Search this section">
+        </label>
+        <div class="cms-list" id="contentList" aria-live="polite"></div>
+      </aside>
+
+      <section class="cms-editor" aria-label="Edit selected content">
+        <div class="cms-editor-head">
+          <div>
+            <span id="editorEyebrow" class="cms-eyebrow">Content item</span>
+            <h2 id="editorTitle">Choose an item to edit</h2>
+          </div>
+          <button class="btn btn-outline-danger btn-sm" id="deleteButton" type="button" hidden><i class="bi bi-trash3" aria-hidden="true"></i><span>Delete</span></button>
+        </div>
+        <div id="emptyEditor" class="cms-empty-editor">
+          <i class="bi bi-pencil-square" aria-hidden="true"></i>
+          <p>Select an item from the list, or create a new one.</p>
+        </div>
+        <form id="contentForm" hidden>
+          <div class="cms-editor-layout">
+            <div id="editorFields" class="cms-fields"></div>
+            <div id="mediaPreview" class="cms-media-preview" hidden>
+              <div id="mediaPreviewFrame" class="cms-preview-frame"><img id="mediaPreviewImage" alt=""></div>
+              <span id="mediaPreviewLabel">Image preview</span>
+            </div>
+          </div>
+          <div class="cms-form-footer">
+            <p>Deleting an item removes its uploaded image when no other content uses it.</p>
+            <div class="cms-form-actions">
+              <button class="btn btn-outline-secondary" id="cancelButton" type="button">Cancel</button>
+              <button class="btn btn-primary" id="saveButton" type="submit"><i class="bi bi-check2" aria-hidden="true"></i><span>Save changes</span></button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="../js/content-admin.js?v=20261003-image-controls"></script>
+</body>
+</html>

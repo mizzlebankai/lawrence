@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
   <title>Lawrence Admin Dashboard</title>
   <link rel="icon" href="../assets/lawrence-logo.png">
   <link rel="stylesheet" href="../vendor/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="../vendor/bootstrap-icons/bootstrap-icons.css">
-  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/style.css?v=20261002-image-controls">
   <style>
     body {
       background: #f5f7fb;
@@ -86,6 +87,10 @@
     .view-tabs { display:flex; gap:.5rem; border-bottom:1px solid rgba(21,61,99,0.14); margin-bottom:1.25rem; }
     .view-tab { border:0; border-bottom:3px solid transparent; background:transparent; padding:.7rem .9rem; color:var(--text-soft); font-weight:700; }
     .view-tab[aria-pressed="true"] { color:var(--navy-900); border-bottom-color:var(--maroon); }
+    .activity-table time { white-space:nowrap; }
+    .site-module-tabs { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:1rem; }
+    .site-module-tab { border:1px solid rgba(21,61,99,0.15); background:#fff; color:var(--text-soft); border-radius:999px; padding:.55rem .9rem; font-weight:600; }
+    .site-module-tab.active { background:var(--navy-900); color:#fff; border-color:var(--navy-900); }
     table {
       width: 100%;
       margin: 0;
@@ -107,6 +112,16 @@
       box-shadow: 0 24px 70px rgba(5,18,31,0.28);
       color: var(--text);
     }
+    .site-image-preview {
+      width: min(100%, 240px);
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      border: 1px solid #d8dee5;
+      border-radius: 6px;
+      background: #edf1f4;
+    }
+    .site-image-preview img { display:block; width:100%; height:100%; object-fit:cover; }
+    .image-control-value { min-width:3.5ch; text-align:right; font-variant-numeric:tabular-nums; }
     .application-dialog::backdrop { background: rgba(5,18,31,0.62); }
     .dialog-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; border-bottom:1px solid #e7ebef; padding-bottom:1rem; margin-bottom:1rem; }
     .application-detail-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem 1.25rem; }
@@ -145,6 +160,8 @@
     <nav class="view-tabs" aria-label="Admin dashboard sections">
       <button id="applicationsTab" type="button" class="view-tab" aria-pressed="true">Applications</button>
       <button id="newsletterTab" type="button" class="view-tab" aria-pressed="false">Newsletter</button>
+      <a class="view-tab" href="content.html">Website content</a>
+      <button id="activityTab" type="button" class="view-tab" aria-pressed="false">Activity</button>
     </nav>
 
     <div id="applicationsView">
@@ -192,6 +209,14 @@
             <option value="in_review">In Review</option>
             <option value="accepted">Accepted</option>
             <option value="rejected">Rejected</option>
+          </select>
+        </label>
+        <label for="emailVerificationFilter">
+          <span class="muted me-2">Email</span>
+          <select id="emailVerificationFilter" class="form-select">
+            <option value="">All email states</option>
+            <option value="verified">Verified</option>
+            <option value="pending">Pending verification</option>
           </select>
         </label>
         <label for="yearFilter">
@@ -273,8 +298,11 @@
       </section>
       <section class="table-wrap mb-4">
         <div class="toolbar-row justify-content-between">
-          <div><strong>Compose a newsletter</strong><div class="muted small">Save a draft, send a test, then send to confirmed subscribers only.</div></div>
-          <span id="campaignAudiencePreview" class="badge bg-light text-dark">0 eligible recipients</span>
+          <div><strong>Compose a campaign</strong><div class="muted small">Save a draft and test it; campaigns go only to verified, eligible recipients.</div></div>
+          <div class="d-flex align-items-center gap-2">
+            <button id="refreshApplicantAudience" type="button" class="btn btn-sm btn-outline-secondary d-none">Refresh applicants</button>
+            <span id="campaignAudiencePreview" class="badge bg-light text-dark">0 eligible recipients</span>
+          </div>
         </div>
         <form id="campaignForm" class="p-3 p-md-4">
           <div class="row g-3">
@@ -283,7 +311,14 @@
               <input id="campaignSubject" class="form-control" type="text" maxlength="150" required>
             </div>
             <div class="col-md-4">
-              <label for="campaignInterest" class="form-label fw-semibold">Recipient interest</label>
+              <label for="campaignAudienceType" class="form-label fw-semibold">Audience</label>
+              <select id="campaignAudienceType" class="form-select">
+                <option value="subscribers">Newsletter subscribers</option>
+                <option value="applicants">Admission applicants</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label id="campaignGroupLabel" for="campaignInterest" class="form-label fw-semibold">Subscriber interest</label>
               <select id="campaignInterest" class="form-select">
                 <option value="general">All confirmed subscribers</option>
                 <option value="shs">SHS and general updates</option>
@@ -291,9 +326,68 @@
                 <option value="college">College and general updates</option>
               </select>
             </div>
+            <div id="campaignApplicantStatusWrap" class="col-md-4 d-none">
+              <label for="campaignApplicantStatus" class="form-label fw-semibold">Application status</label>
+              <select id="campaignApplicantStatus" class="form-select" disabled>
+                <option value="all">All statuses</option>
+                <option value="submitted">Submitted</option>
+                <option value="in_review">In review</option>
+                <option value="waitlisted">Waitlisted</option>
+                <option value="accepted">Accepted</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label for="campaignHeadline" class="form-label fw-semibold">Email headline <span class="muted fw-normal">(optional; defaults to subject)</span></label>
+              <input id="campaignHeadline" class="form-control" type="text" maxlength="150" placeholder="A clear headline for the email">
+            </div>
             <div class="col-12">
               <label for="campaignBody" class="form-label fw-semibold">Message</label>
               <textarea id="campaignBody" class="form-control" rows="8" maxlength="12000" required placeholder="Write your newsletter message in plain text."></textarea>
+            </div>
+            <div class="col-md-7">
+              <label for="campaignImageUrl" class="form-label fw-semibold">Image URL <span class="muted fw-normal">(optional)</span></label>
+              <input id="campaignImageUrl" class="form-control" type="url" inputmode="url" placeholder="https://...">
+              <div class="form-text">Use an HTTPS image URL, or upload a JPG, PNG, or WebP image.</div>
+            </div>
+            <div class="col-md-5">
+              <label for="campaignImageFile" class="form-label fw-semibold">Upload image</label>
+              <input id="campaignImageFile" class="form-control" type="file" accept="image/jpeg,image/png,image/webp">
+            </div>
+            <div class="col-12">
+              <label for="campaignImageAlt" class="form-label fw-semibold">Image description <span class="muted fw-normal">(accessibility)</span></label>
+              <input id="campaignImageAlt" class="form-control" type="text" maxlength="200" placeholder="Describe the image briefly">
+            </div>
+            <div class="col-md-5">
+              <label for="campaignButtonLabel" class="form-label fw-semibold">Button text <span class="muted fw-normal">(optional)</span></label>
+              <input id="campaignButtonLabel" class="form-control" type="text" maxlength="60" placeholder="e.g. Read more">
+            </div>
+            <div class="col-md-7">
+              <label for="campaignButtonUrl" class="form-label fw-semibold">Button link</label>
+              <input id="campaignButtonUrl" class="form-control" type="url" inputmode="url" placeholder="https://...">
+            </div>
+            <div class="col-12">
+              <label for="campaignAttachments" class="form-label fw-semibold">Attach documents <span class="muted fw-normal">(optional)</span></label>
+              <input id="campaignAttachments" class="form-control" type="file" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.csv">
+              <div class="form-text">PDF, Word, PowerPoint, Excel, TXT, or CSV; up to 5 MB per file and 8 MB total per email.</div>
+              <div id="campaignAttachmentList" class="small mt-2" aria-live="polite"></div>
+            </div>
+            <div class="col-12">
+              <div class="muted small mb-2">Email preview</div>
+              <div class="border rounded p-3" style="max-width:600px;background:#f3f5f7">
+                <div class="rounded-top p-3" style="background:#142d4c;border-bottom:4px solid #b79452">
+                  <img src="../assets/lawrence-logo.png" alt="Lawrence College &amp; SHS" width="52" height="52" style="object-fit:contain">
+                  <div class="text-white small mt-2">LAWRENCE COLLEGE &amp; SHS</div>
+                </div>
+                <img id="campaignPreviewImage" class="w-100 d-none" alt="" style="max-height:260px;object-fit:cover">
+                <div class="bg-white p-4">
+                  <div id="campaignPreviewGreeting" class="small text-secondary">Hello subscriber,</div>
+                  <h3 id="campaignPreviewHeadline" class="h4 mt-2">Your newsletter headline</h3>
+                  <div id="campaignPreviewBody" class="small" style="white-space:pre-wrap">Your message preview will appear here.</div>
+                  <a id="campaignPreviewButton" class="btn btn-warning mt-3 d-none" href="#" tabindex="-1"></a>
+                </div>
+                <div id="campaignPreviewFooter" class="small text-secondary p-3">You received this because you subscribed to Lawrence updates. Unsubscribe</div>
+              </div>
             </div>
             <div class="col-md-6">
               <label for="campaignTestEmail" class="form-label fw-semibold">Test recipient email</label>
@@ -330,6 +424,11 @@
               <option value="">All interests</option><option value="general">General</option><option value="shs">SHS</option><option value="remedial">Remedial</option><option value="college">College</option>
             </select>
           </label>
+          <label for="subscriberSortFilter"><span class="muted me-2">Sort</span>
+            <select id="subscriberSortFilter" class="form-select">
+              <option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="name">Name A–Z</option><option value="email">Email A–Z</option>
+            </select>
+          </label>
           <label for="subscriberStatusFilter"><span class="muted me-2">Status</span>
             <select id="subscriberStatusFilter" class="form-select">
               <option value="">All statuses</option><option value="pending_confirmation">Pending confirmation</option><option value="active">Active</option><option value="unsubscribed">Unsubscribed</option><option value="bounced">Bounced</option>
@@ -345,6 +444,322 @@
           </table>
         </div>
         <div class="table-footer"><span id="subscriberResults" class="muted small">No subscribers</span></div>
+      </section>
+    </div>
+
+    <div id="siteContentView" class="d-none">
+      <div class="site-module-tabs" aria-label="Website content modules">
+        <button type="button" class="site-module-tab active" data-module="posts">News &amp; Events</button>
+        <button type="button" class="site-module-tab" data-module="sections">Page Sections</button>
+        <button type="button" class="site-module-tab" data-module="leadership">Leadership</button>
+        <button type="button" class="site-module-tab" data-module="gallery">Gallery</button>
+      </div>
+
+      <section id="sitePostsModule" class="site-module-panel table-wrap mb-4">
+        <div class="toolbar-row justify-content-between">
+          <div><strong>News and events</strong><div class="muted small">Manage published stories shown on the public website.</div></div>
+          <button id="refreshSitePosts" type="button" class="btn btn-outline-secondary"><i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Refresh</button>
+        </div>
+        <form id="sitePostForm" class="p-3 p-md-4">
+          <input id="sitePostId" type="hidden">
+          <input id="sitePostImagePath" type="hidden">
+          <div class="row g-3">
+            <div class="col-sm-4 col-lg-3">
+              <label for="sitePostKind" class="form-label fw-semibold">Content type</label>
+              <select id="sitePostKind" class="form-select"><option value="news">News</option><option value="event">Event</option></select>
+            </div>
+            <div class="col-sm-8 col-lg-5">
+              <label for="sitePostTitle" class="form-label fw-semibold">Title</label>
+              <input id="sitePostTitle" class="form-control" maxlength="180" required>
+            </div>
+            <div class="col-lg-4">
+              <label for="sitePostStatus" class="form-label fw-semibold">Status</label>
+              <select id="sitePostStatus" class="form-select"><option value="draft">Save as draft</option><option value="published">Publish</option><option value="archived">Archive</option></select>
+            </div>
+            <div class="col-12">
+              <label for="sitePostExcerpt" class="form-label fw-semibold">Short summary</label>
+              <textarea id="sitePostExcerpt" class="form-control" rows="2" maxlength="500" required></textarea>
+            </div>
+            <div class="col-12">
+              <label for="sitePostBody" class="form-label fw-semibold">Story details</label>
+              <textarea id="sitePostBody" class="form-control" rows="5" maxlength="12000" placeholder="Plain text story details"></textarea>
+            </div>
+            <div class="col-md-6">
+              <label for="sitePostEventDate" class="form-label fw-semibold">Event date <span class="muted">(optional)</span></label>
+              <input id="sitePostEventDate" class="form-control" type="datetime-local">
+            </div>
+            <div class="col-md-6">
+              <label for="sitePostImage" class="form-label fw-semibold">Featured image <span class="muted">(JPG, PNG, WebP; max 5 MB)</span></label>
+              <input id="sitePostImage" class="form-control" type="file" accept="image/jpeg,image/png,image/webp">
+            </div>
+            <div class="col-12">
+              <div class="d-flex flex-wrap align-items-start gap-3">
+                <div>
+                  <label for="sitePostImageTemplate" class="form-label fw-semibold">Image template</label>
+                  <select id="sitePostImageTemplate" class="form-select mb-2">
+                    <option value="news-4x3" data-ratio="4 / 3">News story · 4:3</option>
+                    <option value="poster-2x3" data-ratio="2 / 3">Admissions poster · 2:3</option>
+                    <option value="square-1x1" data-ratio="1 / 1">Square tile · 1:1</option>
+                    <option value="banner-16x9" data-ratio="16 / 9">Wide banner · 16:9</option>
+                  </select>
+                  <span class="form-label fw-semibold d-block">Frame preview</span>
+                  <div id="sitePostImagePreviewFrame" class="site-image-preview"><img id="sitePostImagePreview" alt="Preview of the featured image" hidden></div>
+                </div>
+                <div class="row g-3 flex-grow-1">
+                  <div class="col-sm-6">
+                    <label for="sitePostImageFit" class="form-label fw-semibold">Fit to frame</label>
+                    <select id="sitePostImageFit" class="form-select">
+                      <option value="auto">Auto-fit portrait posters</option>
+                      <option value="cover">Fill frame (crop edges)</option>
+                      <option value="contain">Show full image</option>
+                    </select>
+                  </div>
+                  <div class="col-sm-6">
+                    <label for="sitePostImageZoomX" class="form-label fw-semibold">Horizontal zoom <output id="sitePostImageZoomXValue" class="image-control-value float-end">100%</output></label>
+                    <input id="sitePostImageZoomX" class="form-range" type="range" min="100" max="200" value="100">
+                  </div>
+                  <div class="col-sm-6">
+                    <label for="sitePostImageZoomY" class="form-label fw-semibold">Vertical zoom <output id="sitePostImageZoomYValue" class="image-control-value float-end">100%</output></label>
+                    <input id="sitePostImageZoomY" class="form-range" type="range" min="100" max="200" value="100">
+                  </div>
+                  <div class="col-sm-6">
+                    <label for="sitePostImagePositionX" class="form-label fw-semibold">Horizontal position <output id="sitePostImagePositionXValue" class="image-control-value float-end">50%</output></label>
+                    <input id="sitePostImagePositionX" class="form-range" type="range" min="0" max="100" value="50">
+                  </div>
+                  <div class="col-sm-6">
+                    <label for="sitePostImagePositionY" class="form-label fw-semibold">Vertical position <output id="sitePostImagePositionYValue" class="image-control-value float-end">50%</output></label>
+                    <input id="sitePostImagePositionY" class="form-range" type="range" min="0" max="100" value="50">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12">
+              <label for="sitePostImageAlt" class="form-label fw-semibold">Image description</label>
+              <input id="sitePostImageAlt" class="form-control" maxlength="240" placeholder="Describe the image for visitors using screen readers">
+            </div>
+            <div class="col-12 d-flex flex-wrap gap-2 align-items-center">
+              <button id="saveSitePost" type="submit" class="btn btn-primary">Save content</button>
+              <button id="cancelSitePostEdit" type="button" class="btn btn-outline-secondary d-none">Cancel edit</button>
+              <span id="sitePostMessage" class="small" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+        </form>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th>Title</th><th>Type</th><th>Status</th><th>Published</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+            <tbody id="sitePostsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="siteSectionsModule" class="site-module-panel table-wrap mb-4 d-none">
+        <div class="toolbar-row justify-content-between">
+          <div><strong>Page sections</strong><div class="muted small">Update hero, story, and key landing blocks.</div></div>
+          <button id="refreshSiteSections" type="button" class="btn btn-outline-secondary"><i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Refresh</button>
+        </div>
+        <form id="siteSectionForm" class="p-3 p-md-4">
+          <input id="siteSectionId" type="hidden">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="siteSectionPageSlug" class="form-label fw-semibold">Page slug</label>
+              <input id="siteSectionPageSlug" class="form-control" placeholder="about" required>
+            </div>
+            <div class="col-md-4">
+              <label for="siteSectionKey" class="form-label fw-semibold">Section key</label>
+              <input id="siteSectionKey" class="form-control" placeholder="hero" required>
+            </div>
+            <div class="col-md-4">
+              <label for="siteSectionStatus" class="form-label fw-semibold">Published</label>
+              <select id="siteSectionStatus" class="form-select">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="siteSectionTitle" class="form-label fw-semibold">Title</label>
+              <input id="siteSectionTitle" class="form-control" placeholder="Headline or section title">
+            </div>
+            <div class="col-md-6">
+              <label for="siteSectionSubtitle" class="form-label fw-semibold">Subtitle</label>
+              <input id="siteSectionSubtitle" class="form-control" placeholder="Short supporting text">
+            </div>
+            <div class="col-12">
+              <label for="siteSectionBody" class="form-label fw-semibold">Body</label>
+              <textarea id="siteSectionBody" class="form-control" rows="5" maxlength="12000"></textarea>
+            </div>
+            <div class="col-12">
+              <label for="siteSectionImageUrl" class="form-label fw-semibold">Image URL or upload</label>
+              <input id="siteSectionImageUrl" class="form-control mb-2" placeholder="https://... or leave blank to upload a file">
+              <input id="siteSectionImageFile" class="form-control" type="file" accept="image/jpeg,image/png,image/webp">
+            </div>
+            <div class="col-12 d-flex flex-wrap align-items-end gap-3">
+              <label for="siteSectionImageTemplate" class="form-label fw-semibold mb-0">Image template
+                <select id="siteSectionImageTemplate" class="form-select mt-1">
+                  <option value="hero-16x9" data-ratio="16 / 9">Page hero · 16:9</option>
+                  <option value="feature-4x3" data-ratio="4 / 3">Feature image · 4:3</option>
+                  <option value="square-1x1" data-ratio="1 / 1">Square tile · 1:1</option>
+                </select>
+              </label>
+              <div id="siteSectionImagePreviewFrame" class="site-image-preview"><img id="siteSectionImagePreview" alt="Page section image preview" hidden></div>
+            </div>
+            <div class="col-12 d-flex flex-wrap gap-2 align-items-center">
+              <button id="saveSiteSection" type="submit" class="btn btn-primary">Save section</button>
+              <button id="cancelSiteSectionEdit" type="button" class="btn btn-outline-secondary d-none">Cancel edit</button>
+              <span id="siteSectionMessage" class="small" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+        </form>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th>Page</th><th>Section</th><th>Title</th><th>Published</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+            <tbody id="siteSectionsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="siteLeadershipModule" class="site-module-panel table-wrap mb-4 d-none">
+        <div class="toolbar-row justify-content-between">
+          <div><strong>Leadership</strong><div class="muted small">Keep founder, director and team profiles in the correct order.</div></div>
+          <button id="refreshLeadership" type="button" class="btn btn-outline-secondary"><i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Refresh</button>
+        </div>
+        <form id="leadershipForm" class="p-3 p-md-4">
+          <input id="leadershipId" type="hidden">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="leadershipName" class="form-label fw-semibold">Name</label>
+              <input id="leadershipName" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label for="leadershipRole" class="form-label fw-semibold">Role</label>
+              <input id="leadershipRole" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label for="leadershipDivision" class="form-label fw-semibold">Division</label>
+              <select id="leadershipDivision" class="form-select">
+                <option value="general">General</option>
+                <option value="college">College</option>
+                <option value="high-school">High School</option>
+                <option value="remedial">Remedial</option>
+              </select>
+            </div>
+            <div class="col-12">
+              <label for="leadershipBio" class="form-label fw-semibold">Bio</label>
+              <textarea id="leadershipBio" class="form-control" rows="5" maxlength="8000"></textarea>
+            </div>
+            <div class="col-md-6">
+              <label for="leadershipPhotoUrl" class="form-label fw-semibold">Photo URL or upload</label>
+              <input id="leadershipPhotoUrl" class="form-control mb-2" placeholder="https://... or leave blank to upload a file">
+              <input id="leadershipPhotoFile" class="form-control" type="file" accept="image/jpeg,image/png,image/webp">
+            </div>
+            <div class="col-md-6 d-flex flex-wrap align-items-end gap-3">
+              <label for="leadershipImageTemplate" class="form-label fw-semibold mb-0">Image template
+                <select id="leadershipImageTemplate" class="form-select mt-1">
+                  <option value="portrait-3x4" data-ratio="3 / 4">Leadership portrait · 3:4</option>
+                  <option value="square-1x1" data-ratio="1 / 1">Square portrait · 1:1</option>
+                </select>
+              </label>
+              <div id="leadershipImagePreviewFrame" class="site-image-preview"><img id="leadershipImagePreview" alt="Leadership photo preview" hidden></div>
+            </div>
+            <div class="col-md-3">
+              <label for="leadershipOrder" class="form-label fw-semibold">Display order</label>
+              <input id="leadershipOrder" class="form-control" type="number" min="0" value="0">
+            </div>
+            <div class="col-md-3">
+              <label for="leadershipPublished" class="form-label fw-semibold">Published</label>
+              <select id="leadershipPublished" class="form-select">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </div>
+            <div class="col-12 d-flex flex-wrap gap-2 align-items-center">
+              <button id="saveLeadership" type="submit" class="btn btn-primary">Save profile</button>
+              <button id="cancelLeadershipEdit" type="button" class="btn btn-outline-secondary d-none">Cancel edit</button>
+              <span id="leadershipMessage" class="small" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+        </form>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th>Name</th><th>Role</th><th>Division</th><th>Order</th><th>Published</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+            <tbody id="leadershipTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="siteGalleryModule" class="site-module-panel table-wrap d-none">
+        <div class="toolbar-row justify-content-between">
+          <div><strong>Gallery</strong><div class="muted small">Manage school photos shown in the gallery section.</div></div>
+          <button id="refreshGallery" type="button" class="btn btn-outline-secondary"><i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Refresh</button>
+        </div>
+        <form id="galleryForm" class="p-3 p-md-4">
+          <input id="galleryId" type="hidden">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="galleryTitle" class="form-label fw-semibold">Title</label>
+              <input id="galleryTitle" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+              <label for="galleryCategory" class="form-label fw-semibold">Category</label>
+              <input id="galleryCategory" class="form-control" placeholder="general">
+            </div>
+            <div class="col-md-4">
+              <label for="galleryOrder" class="form-label fw-semibold">Display order</label>
+              <input id="galleryOrder" class="form-control" type="number" min="0" value="0">
+            </div>
+            <div class="col-12">
+              <label for="galleryCaption" class="form-label fw-semibold">Caption</label>
+              <textarea id="galleryCaption" class="form-control" rows="3" maxlength="500"></textarea>
+            </div>
+            <div class="col-md-6">
+              <label for="galleryImageUrl" class="form-label fw-semibold">Image URL or upload</label>
+              <input id="galleryImageUrl" class="form-control mb-2" placeholder="https://... or leave blank to upload a file">
+              <input id="galleryImageFile" class="form-control" type="file" accept="image/jpeg,image/png,image/webp">
+            </div>
+            <div class="col-md-6 d-flex flex-wrap align-items-end gap-3">
+              <label for="galleryImageTemplate" class="form-label fw-semibold mb-0">Image template
+                <select id="galleryImageTemplate" class="form-select mt-1">
+                  <option value="gallery-4x3" data-ratio="4 / 3">Gallery tile · 4:3</option>
+                  <option value="portrait-3x4" data-ratio="3 / 4">Portrait · 3:4</option>
+                  <option value="square-1x1" data-ratio="1 / 1">Square tile · 1:1</option>
+                </select>
+              </label>
+              <div id="galleryImagePreviewFrame" class="site-image-preview"><img id="galleryImagePreview" alt="Gallery image preview" hidden></div>
+            </div>
+            <div class="col-md-3">
+              <label for="galleryPublished" class="form-label fw-semibold">Published</label>
+              <select id="galleryPublished" class="form-select">
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </select>
+            </div>
+            <div class="col-12 d-flex flex-wrap gap-2 align-items-center">
+              <button id="saveGalleryItem" type="submit" class="btn btn-primary">Save gallery item</button>
+              <button id="cancelGalleryEdit" type="button" class="btn btn-outline-secondary d-none">Cancel edit</button>
+              <span id="galleryMessage" class="small" role="status" aria-live="polite"></span>
+            </div>
+          </div>
+        </form>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light"><tr><th>Title</th><th>Category</th><th>Order</th><th>Published</th><th><span class="visually-hidden">Actions</span></th></tr></thead>
+            <tbody id="galleryTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div id="activityView" class="d-none">
+      <section class="table-wrap">
+        <div class="toolbar-row justify-content-between">
+          <div><strong>Recent activity</strong><div class="muted small">Latest 50 admissions, newsletter, and website content events.</div></div>
+          <button id="refreshActivity" type="button" class="btn btn-outline-secondary"><i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Refresh</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 activity-table">
+            <thead class="table-light"><tr><th>When</th><th>Activity</th><th>Record</th><th>By</th></tr></thead>
+            <tbody id="activityTableBody"><tr><td colspan="4" class="text-center muted py-4">Open this tab to load recent activity.</td></tr></tbody>
+          </table>
+        </div>
       </section>
     </div>
 
@@ -397,7 +812,7 @@
   </div>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
 
     const supabaseUrl = 'https://ttjgkfsrkxpxeufkikma.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0amdrZnNya3hweGV1Zmtpa21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3ODAxOTYsImV4cCI6MjEwNjM1NjE5Nn0.WeSQ17D0rjM_Jxltvy1X4sjeFG7lRtRDPUjcUdaw8Uk';
@@ -405,6 +820,7 @@
 
     const programFilter = document.getElementById('programFilter');
     const statusFilter = document.getElementById('statusFilter');
+    const emailVerificationFilter = document.getElementById('emailVerificationFilter');
     const yearFilter = document.getElementById('yearFilter');
     const searchInput = document.getElementById('applicationSearch');
     const sortFilter = document.getElementById('sortFilter');
@@ -434,17 +850,39 @@
     let newsletterModeLoaded = false;
     let liveCampaignSendingEnabled = false;
     let selectedCampaignId = null;
+    let sitePostsLoaded = false;
+    let siteSectionsLoaded = false;
+    let leadershipLoaded = false;
+    let galleryLoaded = false;
+    let activityLoaded = false;
+    let editingSitePost = null;
+    let editingSiteSection = null;
+    let editingLeadership = null;
+    let editingGalleryItem = null;
+    let sitePostPreviewObjectUrl = null;
+    let campaignImagePreviewObjectUrl = null;
+    const cmsImagePreviewUrls = new Map();
+    const newsletterAttachmentMimeTypes = {
+      pdf: 'application/pdf',
+      doc: 'application/msword',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ppt: 'application/vnd.ms-powerpoint',
+      pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      xls: 'application/vnd.ms-excel',
+      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      txt: 'text/plain',
+      csv: 'text/csv'
+    };
+    const newsletterAttachmentTotalLimit = 8 * 1024 * 1024;
+    const cmsImagePreviewFields = {
+      section: { frame: 'siteSectionImagePreviewFrame', image: 'siteSectionImagePreview', file: 'siteSectionImageFile', source: 'siteSectionImageUrl', template: 'siteSectionImageTemplate' },
+      leadership: { frame: 'leadershipImagePreviewFrame', image: 'leadershipImagePreview', file: 'leadershipPhotoFile', source: 'leadershipPhotoUrl', template: 'leadershipImageTemplate' },
+      gallery: { frame: 'galleryImagePreviewFrame', image: 'galleryImagePreview', file: 'galleryImageFile', source: 'galleryImageUrl', template: 'galleryImageTemplate' }
+    };
 
     async function ensureAuthorized() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        window.location.href = 'login.html';
-        return false;
-      }
-
-      const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (assuranceError || (assurance?.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2')) {
-        await supabase.auth.signOut();
         window.location.href = 'login.html';
         return false;
       }
@@ -466,7 +904,9 @@
     }
 
     async function loadApplications() {
-      const { data, error } = await supabase.from('applications').select('*').order('submitted_at', { ascending: false });
+      const { data, error } = await supabase.from('applications')
+        .select('id, reference_number, program_type, applicant_name, email, email_verified_at, phone, guardian_name, guardian_phone, status, intake_year, form_data, notes, submitted_at, updated_at')
+        .order('submitted_at', { ascending: false });
 
       if (error) {
         showNotice('Unable to load applications. Please refresh and try again.', 'danger');
@@ -480,6 +920,688 @@
       document.getElementById('collegeWaitlist').textContent = allApplications.filter((item) => item.program_type === 'college' && item.status === 'waitlisted').length;
       document.getElementById('shsCount').textContent = allApplications.filter((item) => item.program_type === 'shs').length;
       document.getElementById('remedialCount').textContent = allApplications.filter((item) => item.program_type === 'remedial').length;
+      updateCampaignAudiencePreview();
+    }
+
+    async function loadActivity() {
+      const body = document.getElementById('activityTableBody');
+      body.replaceChildren();
+      const { data, error } = await supabase
+        .from('admin_activity_logs')
+        .select('created_at, event_name, entity_type, entity_label, details, actor_label')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = 4;
+        cell.className = 'text-center text-danger py-4';
+        cell.textContent = 'Activity logs are unavailable. Apply supabase/schema.sql in Supabase, then refresh.';
+        row.appendChild(cell);
+        body.appendChild(row);
+        activityLoaded = false;
+        return;
+      }
+
+      (data || []).forEach((entry) => {
+        const row = document.createElement('tr');
+        const timeCell = document.createElement('td');
+        const time = document.createElement('time');
+        time.dateTime = entry.created_at;
+        time.textContent = new Date(entry.created_at).toLocaleString();
+        timeCell.appendChild(time);
+        const eventCell = document.createElement('td');
+        eventCell.textContent = entry.event_name;
+        const recordCell = document.createElement('td');
+        recordCell.textContent = [entry.entity_label, entry.details].filter(Boolean).join(' · ') || entry.entity_type;
+        const actorCell = document.createElement('td');
+        actorCell.textContent = entry.actor_label;
+        row.append(timeCell, eventCell, recordCell, actorCell);
+        body.appendChild(row);
+      });
+
+      if (!data?.length) {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = 4;
+        cell.className = 'text-center muted py-4';
+        cell.textContent = 'No activity recorded yet.';
+        row.appendChild(cell);
+        body.appendChild(row);
+      }
+      activityLoaded = true;
+    }
+
+    function slugify(value) {
+      return value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+        .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 160);
+    }
+
+    function toLocalDateTime(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+      return date.toISOString().slice(0, 16);
+    }
+
+    function updateSitePostImagePreview() {
+      const preview = document.getElementById('sitePostImagePreview');
+      const selectedImage = document.getElementById('sitePostImage').files[0];
+      const imagePath = document.getElementById('sitePostImagePath').value;
+      const template = document.getElementById('sitePostImageTemplate');
+      document.getElementById('sitePostImagePreviewFrame').style.aspectRatio = template.selectedOptions[0]?.dataset.ratio || '4 / 3';
+      if (sitePostPreviewObjectUrl) {
+        URL.revokeObjectURL(sitePostPreviewObjectUrl);
+        sitePostPreviewObjectUrl = null;
+      }
+      if (selectedImage) {
+        sitePostPreviewObjectUrl = URL.createObjectURL(selectedImage);
+        preview.src = sitePostPreviewObjectUrl;
+        preview.hidden = false;
+      } else if (imagePath) {
+        preview.src = supabase.storage.from('site-media').getPublicUrl(imagePath).data.publicUrl;
+        preview.hidden = false;
+      } else {
+        preview.removeAttribute('src');
+        preview.hidden = true;
+      }
+      preview.onload = applySitePostImageFrame;
+      applySitePostImageFrame();
+    }
+
+    function applySitePostImageFrame() {
+      const preview = document.getElementById('sitePostImagePreview');
+      const fit = document.getElementById('sitePostImageFit').value;
+      const zoomX = Number(document.getElementById('sitePostImageZoomX').value);
+      const zoomY = Number(document.getElementById('sitePostImageZoomY').value);
+      const positionX = Number(document.getElementById('sitePostImagePositionX').value);
+      const positionY = Number(document.getElementById('sitePostImagePositionY').value);
+      const isPortrait = preview.naturalWidth && preview.naturalHeight > preview.naturalWidth;
+      preview.style.objectFit = fit === 'auto' ? (isPortrait ? 'contain' : 'cover') : fit;
+      preview.style.objectPosition = `${positionX}% ${positionY}%`;
+      preview.style.transform = `scale(${zoomX / 100}, ${zoomY / 100})`;
+      document.getElementById('sitePostImageZoomXValue').value = `${zoomX}%`;
+      document.getElementById('sitePostImageZoomYValue').value = `${zoomY}%`;
+      document.getElementById('sitePostImagePositionXValue').value = `${positionX}%`;
+      document.getElementById('sitePostImagePositionYValue').value = `${positionY}%`;
+    }
+
+    function updateCMSImagePreview(type) {
+      const fields = cmsImagePreviewFields[type];
+      const frame = document.getElementById(fields.frame);
+      const image = document.getElementById(fields.image);
+      const file = document.getElementById(fields.file).files[0];
+      const source = document.getElementById(fields.source).value.trim();
+      const template = document.getElementById(fields.template);
+      const previousUrl = cmsImagePreviewUrls.get(type);
+      if (previousUrl) URL.revokeObjectURL(previousUrl);
+
+      const previewUrl = file ? URL.createObjectURL(file) : source;
+      if (file) cmsImagePreviewUrls.set(type, previewUrl);
+      else cmsImagePreviewUrls.delete(type);
+      frame.style.aspectRatio = template.selectedOptions[0]?.dataset.ratio || '4 / 3';
+      image.hidden = !previewUrl;
+      if (previewUrl) image.src = previewUrl;
+      else image.removeAttribute('src');
+    }
+
+    async function uploadPublicSiteImage(file, folder) {
+      if (!file) return null;
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+        throw new Error('Choose a JPG, PNG, or WebP image under 5 MB.');
+      }
+      const extension = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+      const objectPath = `${folder}/${crypto.randomUUID()}.${extension}`;
+      const { error } = await supabase.storage.from('site-media').upload(objectPath, file, {
+        cacheControl: '3600',
+        contentType: file.type,
+        upsert: false
+      });
+      if (error) throw error;
+      const { data } = supabase.storage.from('site-media').getPublicUrl(objectPath);
+      return data?.publicUrl || null;
+    }
+
+    function showSiteModule(moduleName) {
+      const moduleMap = {
+        posts: 'sitePostsModule',
+        sections: 'siteSectionsModule',
+        leadership: 'siteLeadershipModule',
+        gallery: 'siteGalleryModule'
+      };
+
+      Object.entries(moduleMap).forEach(([key, panelId]) => {
+        const panel = document.getElementById(panelId);
+        const tab = document.querySelector(`.site-module-tab[data-module="${key}"]`);
+        const isActive = key === moduleName;
+        panel.classList.toggle('d-none', !isActive);
+        tab?.classList.toggle('active', isActive);
+      });
+    }
+
+    function resetSiteSectionForm() {
+      document.getElementById('siteSectionForm').reset();
+      document.getElementById('siteSectionId').value = '';
+      document.getElementById('siteSectionStatus').value = 'true';
+      document.getElementById('siteSectionMessage').textContent = '';
+      updateCMSImagePreview('section');
+      document.getElementById('cancelSiteSectionEdit').classList.add('d-none');
+      editingSiteSection = null;
+    }
+
+    function editSiteSection(section) {
+      editingSiteSection = section;
+      document.getElementById('siteSectionId').value = section.id;
+      document.getElementById('siteSectionPageSlug').value = section.page_slug || '';
+      document.getElementById('siteSectionKey').value = section.section_key || '';
+      document.getElementById('siteSectionTitle').value = section.title || '';
+      document.getElementById('siteSectionSubtitle').value = section.subtitle || '';
+      document.getElementById('siteSectionBody').value = section.body || '';
+      document.getElementById('siteSectionImageUrl').value = section.image_url || '';
+      document.getElementById('siteSectionImageTemplate').value = section.image_template || 'hero-16x9';
+      document.getElementById('siteSectionStatus').value = String(Boolean(section.is_published));
+      document.getElementById('siteSectionImageFile').value = '';
+      updateCMSImagePreview('section');
+      document.getElementById('cancelSiteSectionEdit').classList.remove('d-none');
+      document.getElementById('siteSectionPageSlug').focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function loadSiteSections() {
+      const body = document.getElementById('siteSectionsTableBody');
+      body.replaceChildren();
+      const { data, error } = await supabase.from('site_sections').select('*').order('page_slug', { ascending: true }).order('section_key', { ascending: true });
+      if (error) {
+        document.getElementById('siteSectionMessage').textContent = 'Could not load page sections. Refresh or check your Supabase schema.';
+        siteSectionsLoaded = false;
+        return;
+      }
+
+      (data || []).forEach((section) => {
+        const row = document.createElement('tr');
+        const page = document.createElement('td'); page.textContent = section.page_slug;
+        const key = document.createElement('td'); key.textContent = section.section_key;
+        const title = document.createElement('td'); title.textContent = section.title || 'Untitled';
+        const status = document.createElement('td'); status.textContent = section.is_published ? 'Published' : 'Draft';
+        const actions = document.createElement('td');
+        const edit = document.createElement('button');
+        edit.type = 'button'; edit.className = 'btn btn-sm btn-outline-primary me-2'; edit.textContent = 'Edit';
+        edit.addEventListener('click', () => editSiteSection(section));
+        const remove = document.createElement('button');
+        remove.type = 'button'; remove.className = 'btn btn-sm btn-outline-danger'; remove.textContent = 'Delete';
+        remove.addEventListener('click', () => deleteSiteSection(section));
+        actions.append(edit, remove);
+        row.append(page, key, title, status, actions);
+        body.appendChild(row);
+      });
+
+      if (!data?.length) {
+        const row = document.createElement('tr');
+        const empty = document.createElement('td');
+        empty.colSpan = 5; empty.className = 'text-center muted py-4'; empty.textContent = 'No page sections yet. Add one above.';
+        row.appendChild(empty); body.appendChild(row);
+      }
+      siteSectionsLoaded = true;
+    }
+
+    async function saveSiteSection(event) {
+      event.preventDefault();
+      const form = document.getElementById('siteSectionForm');
+      if (!form.reportValidity()) return;
+      const message = document.getElementById('siteSectionMessage');
+      const file = document.getElementById('siteSectionImageFile').files[0];
+      const saveButton = document.getElementById('saveSiteSection');
+      saveButton.disabled = true; message.textContent = 'Saving section...';
+      try {
+        let imageUrl = document.getElementById('siteSectionImageUrl').value.trim() || null;
+        if (file) {
+          imageUrl = await uploadPublicSiteImage(file, 'page-sections');
+        }
+
+        const payload = {
+          page_slug: document.getElementById('siteSectionPageSlug').value.trim().toLowerCase(),
+          section_key: document.getElementById('siteSectionKey').value.trim().toLowerCase(),
+          title: document.getElementById('siteSectionTitle').value.trim() || null,
+          subtitle: document.getElementById('siteSectionSubtitle').value.trim() || null,
+          body: document.getElementById('siteSectionBody').value.trim(),
+          image_url: imageUrl,
+          image_template: document.getElementById('siteSectionImageTemplate').value,
+          is_published: document.getElementById('siteSectionStatus').value === 'true'
+        };
+
+        const sectionId = document.getElementById('siteSectionId').value;
+        const { error } = sectionId
+          ? await supabase.from('site_sections').update(payload).eq('id', sectionId)
+          : await supabase.from('site_sections').insert(payload);
+        if (error) throw error;
+
+        resetSiteSectionForm();
+        await loadSiteSections();
+        message.textContent = 'Page section saved.';
+      } catch (error) {
+        message.textContent = error.message || 'Could not save the section. Check Supabase access and try again.';
+      } finally {
+        saveButton.disabled = false;
+      }
+    }
+
+    async function deleteSiteSection(section) {
+      if (!window.confirm(`Delete the “${section.section_key}” section from ${section.page_slug}?`)) return;
+      const { error } = await supabase.from('site_sections').delete().eq('id', section.id);
+      if (error) {
+        document.getElementById('siteSectionMessage').textContent = 'Could not delete this section.';
+        return;
+      }
+      if (editingSiteSection?.id === section.id) resetSiteSectionForm();
+      await loadSiteSections();
+      document.getElementById('siteSectionMessage').textContent = 'Section deleted.';
+    }
+
+    function resetLeadershipForm() {
+      document.getElementById('leadershipForm').reset();
+      document.getElementById('leadershipId').value = '';
+      document.getElementById('leadershipPublished').value = 'true';
+      document.getElementById('leadershipOrder').value = '0';
+      document.getElementById('leadershipMessage').textContent = '';
+      updateCMSImagePreview('leadership');
+      document.getElementById('cancelLeadershipEdit').classList.add('d-none');
+      editingLeadership = null;
+    }
+
+    function editLeadership(profile) {
+      editingLeadership = profile;
+      document.getElementById('leadershipId').value = profile.id;
+      document.getElementById('leadershipName').value = profile.full_name || '';
+      document.getElementById('leadershipRole').value = profile.role_title || '';
+      document.getElementById('leadershipDivision').value = profile.division || 'general';
+      document.getElementById('leadershipBio').value = profile.bio || '';
+      document.getElementById('leadershipPhotoUrl').value = profile.photo_url || '';
+      document.getElementById('leadershipImageTemplate').value = profile.image_template || 'portrait-3x4';
+      document.getElementById('leadershipOrder').value = profile.display_order ?? 0;
+      document.getElementById('leadershipPublished').value = String(Boolean(profile.is_published));
+      document.getElementById('leadershipPhotoFile').value = '';
+      updateCMSImagePreview('leadership');
+      document.getElementById('cancelLeadershipEdit').classList.remove('d-none');
+      document.getElementById('leadershipName').focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function loadLeadership() {
+      const body = document.getElementById('leadershipTableBody');
+      body.replaceChildren();
+      const { data, error } = await supabase.from('leadership').select('*').order('display_order', { ascending: true }).order('full_name', { ascending: true });
+      if (error) {
+        document.getElementById('leadershipMessage').textContent = 'Could not load leadership profiles.';
+        leadershipLoaded = false;
+        return;
+      }
+
+      (data || []).forEach((person) => {
+        const row = document.createElement('tr');
+        const name = document.createElement('td'); name.textContent = person.full_name;
+        const role = document.createElement('td'); role.textContent = person.role_title;
+        const division = document.createElement('td'); division.textContent = person.division;
+        const order = document.createElement('td'); order.textContent = person.display_order ?? 0;
+        const status = document.createElement('td'); status.textContent = person.is_published ? 'Published' : 'Draft';
+        const actions = document.createElement('td');
+        const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'btn btn-sm btn-outline-primary me-2'; edit.textContent = 'Edit';
+        edit.addEventListener('click', () => editLeadership(person));
+        const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'btn btn-sm btn-outline-danger'; remove.textContent = 'Delete';
+        remove.addEventListener('click', () => deleteLeadership(person));
+        actions.append(edit, remove);
+        row.append(name, role, division, order, status, actions);
+        body.appendChild(row);
+      });
+
+      if (!data?.length) {
+        const row = document.createElement('tr');
+        const empty = document.createElement('td');
+        empty.colSpan = 6; empty.className = 'text-center muted py-4'; empty.textContent = 'No leadership profiles yet.';
+        row.appendChild(empty); body.appendChild(row);
+      }
+
+      leadershipLoaded = true;
+    }
+
+    async function saveLeadership(event) {
+      event.preventDefault();
+      const form = document.getElementById('leadershipForm');
+      if (!form.reportValidity()) return;
+      const message = document.getElementById('leadershipMessage');
+      const file = document.getElementById('leadershipPhotoFile').files[0];
+      const saveButton = document.getElementById('saveLeadership');
+      saveButton.disabled = true; message.textContent = 'Saving profile...';
+      try {
+        let photoUrl = document.getElementById('leadershipPhotoUrl').value.trim() || null;
+        if (file) {
+          photoUrl = await uploadPublicSiteImage(file, 'leadership');
+        }
+
+        const payload = {
+          full_name: document.getElementById('leadershipName').value.trim(),
+          role_title: document.getElementById('leadershipRole').value.trim(),
+          division: document.getElementById('leadershipDivision').value,
+          bio: document.getElementById('leadershipBio').value.trim(),
+          photo_url: photoUrl,
+          image_template: document.getElementById('leadershipImageTemplate').value,
+          display_order: Number(document.getElementById('leadershipOrder').value || 0),
+          is_published: document.getElementById('leadershipPublished').value === 'true'
+        };
+
+        const profileId = document.getElementById('leadershipId').value;
+        const { error } = profileId
+          ? await supabase.from('leadership').update(payload).eq('id', profileId)
+          : await supabase.from('leadership').insert(payload);
+        if (error) throw error;
+
+        resetLeadershipForm();
+        await loadLeadership();
+        message.textContent = 'Leadership profile saved.';
+      } catch (error) {
+        message.textContent = error.message || 'Could not save leadership profile.';
+      } finally {
+        saveButton.disabled = false;
+      }
+    }
+
+    async function deleteLeadership(profile) {
+      if (!window.confirm(`Delete the leadership profile for ${profile.full_name}?`)) return;
+      const { error } = await supabase.from('leadership').delete().eq('id', profile.id);
+      if (error) {
+        document.getElementById('leadershipMessage').textContent = 'Could not delete this profile.';
+        return;
+      }
+      if (editingLeadership?.id === profile.id) resetLeadershipForm();
+      await loadLeadership();
+      document.getElementById('leadershipMessage').textContent = 'Profile deleted.';
+    }
+
+    function resetGalleryForm() {
+      document.getElementById('galleryForm').reset();
+      document.getElementById('galleryId').value = '';
+      document.getElementById('galleryOrder').value = '0';
+      document.getElementById('galleryPublished').value = 'true';
+      document.getElementById('galleryMessage').textContent = '';
+      updateCMSImagePreview('gallery');
+      document.getElementById('cancelGalleryEdit').classList.add('d-none');
+      editingGalleryItem = null;
+    }
+
+    function editGalleryItem(item) {
+      editingGalleryItem = item;
+      document.getElementById('galleryId').value = item.id;
+      document.getElementById('galleryTitle').value = item.title || '';
+      document.getElementById('galleryCategory').value = item.category || 'general';
+      document.getElementById('galleryCaption').value = item.caption || '';
+      document.getElementById('galleryImageUrl').value = item.image_url || '';
+      document.getElementById('galleryImageTemplate').value = item.image_template || 'gallery-4x3';
+      document.getElementById('galleryOrder').value = item.display_order ?? 0;
+      document.getElementById('galleryPublished').value = String(Boolean(item.is_published));
+      document.getElementById('galleryImageFile').value = '';
+      updateCMSImagePreview('gallery');
+      document.getElementById('cancelGalleryEdit').classList.remove('d-none');
+      document.getElementById('galleryTitle').focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function loadGallery() {
+      const body = document.getElementById('galleryTableBody');
+      body.replaceChildren();
+      const { data, error } = await supabase.from('gallery_items').select('*').order('display_order', { ascending: true }).order('title', { ascending: true });
+      if (error) {
+        document.getElementById('galleryMessage').textContent = 'Could not load gallery items.';
+        galleryLoaded = false;
+        return;
+      }
+
+      (data || []).forEach((item) => {
+        const row = document.createElement('tr');
+        const title = document.createElement('td'); title.textContent = item.title;
+        const category = document.createElement('td'); category.textContent = item.category || 'general';
+        const order = document.createElement('td'); order.textContent = item.display_order ?? 0;
+        const status = document.createElement('td'); status.textContent = item.is_published ? 'Published' : 'Draft';
+        const actions = document.createElement('td');
+        const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'btn btn-sm btn-outline-primary me-2'; edit.textContent = 'Edit';
+        edit.addEventListener('click', () => editGalleryItem(item));
+        const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'btn btn-sm btn-outline-danger'; remove.textContent = 'Delete';
+        remove.addEventListener('click', () => deleteGalleryItem(item));
+        actions.append(edit, remove);
+        row.append(title, category, order, status, actions);
+        body.appendChild(row);
+      });
+
+      if (!data?.length) {
+        const row = document.createElement('tr');
+        const empty = document.createElement('td');
+        empty.colSpan = 5; empty.className = 'text-center muted py-4'; empty.textContent = 'No gallery items yet.';
+        row.appendChild(empty); body.appendChild(row);
+      }
+
+      galleryLoaded = true;
+    }
+
+    async function saveGalleryItem(event) {
+      event.preventDefault();
+      const form = document.getElementById('galleryForm');
+      if (!form.reportValidity()) return;
+      const message = document.getElementById('galleryMessage');
+      const file = document.getElementById('galleryImageFile').files[0];
+      const saveButton = document.getElementById('saveGalleryItem');
+      saveButton.disabled = true; message.textContent = 'Saving item...';
+      try {
+        let imageUrl = document.getElementById('galleryImageUrl').value.trim() || null;
+        if (file) {
+          imageUrl = await uploadPublicSiteImage(file, 'gallery');
+        }
+        if (!imageUrl) throw new Error('Add an image URL or upload an image before saving.');
+
+        const payload = {
+          title: document.getElementById('galleryTitle').value.trim(),
+          category: document.getElementById('galleryCategory').value.trim() || 'general',
+          image_url: imageUrl,
+          caption: document.getElementById('galleryCaption').value.trim(),
+          image_template: document.getElementById('galleryImageTemplate').value,
+          display_order: Number(document.getElementById('galleryOrder').value || 0),
+          is_published: document.getElementById('galleryPublished').value === 'true'
+        };
+
+        const itemId = document.getElementById('galleryId').value;
+        const { error } = itemId
+          ? await supabase.from('gallery_items').update(payload).eq('id', itemId)
+          : await supabase.from('gallery_items').insert(payload);
+        if (error) throw error;
+
+        resetGalleryForm();
+        await loadGallery();
+        message.textContent = 'Gallery item saved.';
+      } catch (error) {
+        message.textContent = error.message || 'Could not save gallery item.';
+      } finally {
+        saveButton.disabled = false;
+      }
+    }
+
+    async function deleteGalleryItem(item) {
+      if (!window.confirm(`Delete the gallery item “${item.title}”?`)) return;
+      const { error } = await supabase.from('gallery_items').delete().eq('id', item.id);
+      if (error) {
+        document.getElementById('galleryMessage').textContent = 'Could not delete this gallery item.';
+        return;
+      }
+      if (editingGalleryItem?.id === item.id) resetGalleryForm();
+      await loadGallery();
+      document.getElementById('galleryMessage').textContent = 'Gallery item deleted.';
+    }
+
+    async function loadSitePosts() {
+      const body = document.getElementById('sitePostsTableBody');
+      body.replaceChildren();
+      const { data, error } = await supabase.from('site_posts').select('*').order('created_at', { ascending: false });
+      if (error) {
+        document.getElementById('sitePostMessage').textContent = 'Could not load content. Apply the website-content schema in Supabase, then refresh.';
+        sitePostsLoaded = false;
+        return;
+      }
+
+      (data || []).forEach((post) => {
+        const row = document.createElement('tr');
+        const title = document.createElement('th');
+        title.scope = 'row';
+        title.textContent = post.title;
+        const kind = document.createElement('td');
+        kind.textContent = post.kind === 'event' ? 'Event' : 'News';
+        const status = document.createElement('td');
+        status.textContent = post.status;
+        const published = document.createElement('td');
+        published.textContent = post.published_at ? new Date(post.published_at).toLocaleString() : 'Not published';
+        const actions = document.createElement('td');
+        actions.className = 'text-nowrap';
+        const edit = document.createElement('button');
+        edit.type = 'button';
+        edit.className = 'btn btn-sm btn-outline-primary me-2';
+        edit.textContent = 'Edit';
+        edit.addEventListener('click', () => editSitePost(post));
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'btn btn-sm btn-outline-danger';
+        remove.textContent = 'Delete';
+        remove.addEventListener('click', () => deleteSitePost(post));
+        actions.append(edit, remove);
+        row.append(title, kind, status, published, actions);
+        body.appendChild(row);
+      });
+      if (!data?.length) {
+        const row = document.createElement('tr');
+        const empty = document.createElement('td');
+        empty.colSpan = 5;
+        empty.className = 'text-center muted py-4';
+        empty.textContent = 'No news or events yet. Add the first item above.';
+        row.appendChild(empty);
+        body.appendChild(row);
+      }
+      sitePostsLoaded = true;
+    }
+
+    function editSitePost(post) {
+      editingSitePost = post;
+      document.getElementById('sitePostId').value = post.id;
+      document.getElementById('sitePostImagePath').value = post.image_path || '';
+      document.getElementById('sitePostKind').value = post.kind;
+      document.getElementById('sitePostTitle').value = post.title;
+      document.getElementById('sitePostStatus').value = post.status;
+      document.getElementById('sitePostExcerpt').value = post.excerpt;
+      document.getElementById('sitePostBody').value = post.body || '';
+      document.getElementById('sitePostEventDate').value = toLocalDateTime(post.event_date);
+      document.getElementById('sitePostImageAlt').value = post.image_alt || '';
+      document.getElementById('sitePostImage').value = '';
+      document.getElementById('sitePostImageFit').value = post.image_fit || 'cover';
+      document.getElementById('sitePostImageZoomX').value = post.image_zoom_x ?? 100;
+      document.getElementById('sitePostImageZoomY').value = post.image_zoom_y ?? 100;
+      document.getElementById('sitePostImagePositionX').value = post.image_position_x ?? 50;
+      document.getElementById('sitePostImagePositionY').value = post.image_position_y ?? 50;
+      updateSitePostImagePreview();
+      document.getElementById('saveSitePost').textContent = 'Update content';
+      document.getElementById('cancelSitePostEdit').classList.remove('d-none');
+      document.getElementById('sitePostTitle').focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetSitePostForm() {
+      document.getElementById('sitePostForm').reset();
+      document.getElementById('sitePostId').value = '';
+      document.getElementById('sitePostImagePath').value = '';
+      document.getElementById('sitePostMessage').textContent = '';
+      document.getElementById('sitePostImageFit').value = 'cover';
+      document.getElementById('sitePostImageZoomX').value = '100';
+      document.getElementById('sitePostImageZoomY').value = '100';
+      document.getElementById('sitePostImagePositionX').value = '50';
+      document.getElementById('sitePostImagePositionY').value = '50';
+      updateSitePostImagePreview();
+      document.getElementById('saveSitePost').textContent = 'Save content';
+      document.getElementById('cancelSitePostEdit').classList.add('d-none');
+      editingSitePost = null;
+    }
+
+    async function saveSitePost(event) {
+      event.preventDefault();
+      const form = document.getElementById('sitePostForm');
+      if (!form.reportValidity()) return;
+
+      const saveButton = document.getElementById('saveSitePost');
+      const message = document.getElementById('sitePostMessage');
+      const selectedImage = document.getElementById('sitePostImage').files[0];
+      if (selectedImage && (!['image/jpeg', 'image/png', 'image/webp'].includes(selectedImage.type) || selectedImage.size > 5 * 1024 * 1024)) {
+        message.textContent = 'Choose a JPG, PNG, or WebP image under 5 MB.';
+        return;
+      }
+
+      saveButton.disabled = true;
+      message.textContent = 'Saving content...';
+      try {
+        let imagePath = document.getElementById('sitePostImagePath').value || null;
+        if (selectedImage) {
+          const extension = selectedImage.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+          imagePath = `news/${crypto.randomUUID()}.${extension}`;
+          const { error: uploadError } = await supabase.storage.from('site-media').upload(imagePath, selectedImage, {
+            cacheControl: '3600',
+            contentType: selectedImage.type,
+            upsert: false
+          });
+          if (uploadError) throw uploadError;
+        }
+
+        const title = document.getElementById('sitePostTitle').value.trim();
+        const status = document.getElementById('sitePostStatus').value;
+        const { data: { user } } = await supabase.auth.getUser();
+        const payload = {
+          kind: document.getElementById('sitePostKind').value,
+          title,
+          slug: slugify(title) || `post-${crypto.randomUUID()}`,
+          excerpt: document.getElementById('sitePostExcerpt').value.trim(),
+          body: document.getElementById('sitePostBody').value.trim(),
+          image_path: imagePath,
+          image_alt: document.getElementById('sitePostImageAlt').value.trim(),
+          image_fit: document.getElementById('sitePostImageFit').value,
+          image_zoom_x: Number(document.getElementById('sitePostImageZoomX').value),
+          image_zoom_y: Number(document.getElementById('sitePostImageZoomY').value),
+          image_position_x: Number(document.getElementById('sitePostImagePositionX').value),
+          image_position_y: Number(document.getElementById('sitePostImagePositionY').value),
+          event_date: document.getElementById('sitePostEventDate').value
+            ? new Date(document.getElementById('sitePostEventDate').value).toISOString()
+            : null,
+          status,
+          published_at: status === 'published' ? (editingSitePost?.published_at || new Date().toISOString()) : null,
+          created_by: user.id
+        };
+        const postId = document.getElementById('sitePostId').value;
+        const result = postId
+          ? await supabase.from('site_posts').update(payload).eq('id', postId)
+          : await supabase.from('site_posts').insert(payload);
+        if (result.error) throw result.error;
+
+        resetSitePostForm();
+        await loadSitePosts();
+        message.textContent = status === 'published' ? 'Content published.' : 'Content saved.';
+      } catch (error) {
+        message.textContent = error.message?.includes('duplicate key')
+          ? 'Another post already uses this title. Adjust the title before saving.'
+          : 'Could not save content. Check Supabase setup and try again.';
+      } finally {
+        saveButton.disabled = false;
+      }
+    }
+
+    async function deleteSitePost(post) {
+      if (!window.confirm(`Delete “${post.title}”? The uploaded image will remain in Storage.`)) return;
+      const { error } = await supabase.from('site_posts').delete().eq('id', post.id);
+      if (error) {
+        document.getElementById('sitePostMessage').textContent = 'Could not delete this item. Check admin access and try again.';
+        return;
+      }
+      if (editingSitePost?.id === post.id) resetSitePostForm();
+      await loadSitePosts();
+      document.getElementById('sitePostMessage').textContent = 'Content deleted. Its image remains available in Storage.';
     }
 
     function syncYearOptions() {
@@ -497,6 +1619,8 @@
         const searchableText = [app.reference_number, app.applicant_name, app.email, app.phone].join(' ').toLowerCase();
         return (!programFilter.value || app.program_type === programFilter.value)
           && (!statusFilter.value || app.status === statusFilter.value)
+          && (!emailVerificationFilter.value
+            || (emailVerificationFilter.value === 'verified' ? Boolean(app.email_verified_at) : !app.email_verified_at))
           && (!yearFilter.value || year === yearFilter.value)
           && (!searchTerm || searchableText.includes(searchTerm));
       });
@@ -547,7 +1671,10 @@
         const applicantEmail = document.createElement('span');
         applicantEmail.className = 'muted d-block';
         applicantEmail.textContent = app.email || 'No email';
-        applicantCell.append(applicantName, applicantEmail);
+        const emailState = document.createElement('span');
+        emailState.className = app.email_verified_at ? 'small text-success d-block' : 'small text-warning-emphasis d-block';
+        emailState.textContent = app.email_verified_at ? 'Email verified' : 'Email not verified';
+        applicantCell.append(applicantName, applicantEmail, emailState);
 
         const programCell = document.createElement('td');
         const programBadge = document.createElement('span');
@@ -611,11 +1738,18 @@
       const searchTerm = document.getElementById('subscriberSearch').value.trim().toLowerCase();
       const interest = document.getElementById('subscriberInterestFilter').value;
       const status = document.getElementById('subscriberStatusFilter').value;
-      return allSubscribers.filter((subscriber) => {
+      const filtered = allSubscribers.filter((subscriber) => {
         const searchableText = [subscriber.full_name, subscriber.email].join(' ').toLowerCase();
         return (!searchTerm || searchableText.includes(searchTerm))
           && (!interest || subscriber.interest_area === interest)
           && (!status || subscriber.status === status);
+      });
+      const sort = document.getElementById('subscriberSortFilter').value;
+      return filtered.sort((a, b) => {
+        if (sort === 'name') return String(a.full_name || '').localeCompare(String(b.full_name || ''));
+        if (sort === 'email') return String(a.email || '').localeCompare(String(b.email || ''));
+        const dateDifference = new Date(a.subscribed_at || 0) - new Date(b.subscribed_at || 0);
+        return sort === 'oldest' ? dateDifference : -dateDifference;
       });
     }
 
@@ -631,17 +1765,44 @@
       updateCampaignAudiencePreview();
     }
 
-    function getCampaignAudienceCount(interestArea) {
+    function getCampaignAudienceCount(audienceType, interestArea, applicantStatus = 'all') {
+      if (audienceType === 'applicants') {
+        return allApplications.filter((application) => application.email
+          && application.email_verified_at
+          && (interestArea === 'general' || application.program_type === interestArea)
+          && (applicantStatus === 'all' || application.status === applicantStatus)).length;
+      }
       return allSubscribers.filter((subscriber) => subscriber.status === 'active'
         && subscriber.consent_given === true
         && subscriber.confirmed_at
         && (interestArea === 'general' || subscriber.interest_area === 'general' || subscriber.interest_area === interestArea)).length;
     }
 
+    function updateCampaignAudienceControls() {
+      const audienceType = document.getElementById('campaignAudienceType').value;
+      const applicants = audienceType === 'applicants';
+      const interest = document.getElementById('campaignInterest');
+      const previousValue = interest.value;
+      const choices = applicants
+        ? [['general', 'All applicant programmes'], ['shs', 'SHS applicants'], ['remedial', 'Remedial applicants'], ['college', 'College applicants']]
+        : [['general', 'All confirmed subscribers'], ['shs', 'SHS and general updates'], ['remedial', 'Remedial and general updates'], ['college', 'College and general updates']];
+      interest.replaceChildren(...choices.map(([value, label]) => new Option(label, value)));
+      interest.value = choices.some(([value]) => value === previousValue) ? previousValue : 'general';
+      document.getElementById('campaignGroupLabel').textContent = applicants ? 'Applicant programme' : 'Subscriber interest';
+      const statusWrap = document.getElementById('campaignApplicantStatusWrap');
+      const statusFilter = document.getElementById('campaignApplicantStatus');
+      document.getElementById('refreshApplicantAudience').classList.toggle('d-none', !applicants);
+      statusWrap.classList.toggle('d-none', !applicants);
+      statusFilter.disabled = !applicants;
+      updateCampaignAudiencePreview();
+    }
+
     function updateCampaignAudiencePreview() {
+      const audienceType = document.getElementById('campaignAudienceType').value;
       const interestArea = document.getElementById('campaignInterest').value;
-      const recipientCount = getCampaignAudienceCount(interestArea);
-      document.getElementById('campaignAudiencePreview').textContent = `${recipientCount} eligible recipient${recipientCount === 1 ? '' : 's'}`;
+      const applicantStatus = document.getElementById('campaignApplicantStatus').value;
+      const recipientCount = getCampaignAudienceCount(audienceType, interestArea, applicantStatus);
+      document.getElementById('campaignAudiencePreview').textContent = `${recipientCount} verified ${audienceType === 'applicants' ? 'applicant' : 'subscriber'}${recipientCount === 1 ? '' : 's'}`;
     }
 
     async function loadNewsletterMode() {
@@ -688,7 +1849,9 @@
         const subjectCell = document.createElement('td');
         subjectCell.textContent = campaign.subject;
         const audienceCell = document.createElement('td');
-        audienceCell.textContent = campaign.interest_area;
+        audienceCell.textContent = campaign.audience_type === 'applicants'
+          ? `Applicants · ${campaign.interest_area === 'general' ? 'All programmes' : campaign.interest_area.toUpperCase()} · ${(campaign.applicant_status || 'all').replaceAll('_', ' ')}`
+          : `Subscribers · ${campaign.interest_area}`;
         const statusCell = document.createElement('td');
         statusCell.textContent = campaign.status;
         const sentCell = document.createElement('td');
@@ -721,7 +1884,7 @@
           sendButton.type = 'button';
           sendButton.className = 'btn btn-sm btn-primary';
           sendButton.textContent = campaign.status === 'draft' ? 'Start sending' : 'Send next batch';
-          sendButton.disabled = !liveCampaignSendingEnabled || (campaign.status === 'draft' && getCampaignAudienceCount(campaign.interest_area) === 0);
+          sendButton.disabled = !liveCampaignSendingEnabled || (campaign.status === 'draft' && getCampaignAudienceCount(campaign.audience_type || 'subscribers', campaign.interest_area, campaign.applicant_status || 'all') === 0);
           sendButton.addEventListener('click', () => sendCampaignBatch(campaign));
           actionsCell.appendChild(sendButton);
         } else if ((campaign.status === 'partial' || campaign.status === 'failed') && campaign.failed_count > 0) {
@@ -752,6 +1915,14 @@
       const confirmed = window.confirm(`Permanently delete campaign “${campaign.subject}” and its delivery history? This cannot be undone.`);
       if (!confirmed) return;
 
+      const { data: attachments, error: attachmentLookupError } = await supabase.from('newsletter_campaign_attachments')
+        .select('storage_path')
+        .eq('campaign_id', campaign.id);
+      if (attachmentLookupError) {
+        showNotice('Could not load campaign attachments for cleanup. Refresh and try again.', 'danger');
+        return;
+      }
+      const attachmentPaths = (attachments || []).map((attachment) => attachment.storage_path);
       const { data, error } = await supabase.from('newsletter_campaigns')
         .delete()
         .eq('id', campaign.id)
@@ -763,10 +1934,121 @@
         return;
       }
 
+      let attachmentCleanupFailed = false;
+      if (attachmentPaths.length) {
+        const { error: storageError } = await supabase.storage.from('newsletter-attachments').remove(attachmentPaths);
+        attachmentCleanupFailed = Boolean(storageError);
+      }
       const campaignIndex = allCampaigns.findIndex((item) => item.id === campaign.id);
       if (campaignIndex !== -1) allCampaigns.splice(campaignIndex, 1);
       renderCampaigns();
-      showNotice('Campaign and its delivery history deleted.', 'success');
+      showNotice(attachmentCleanupFailed
+        ? 'Campaign and delivery history deleted, but some private attachment files may remain in Storage.'
+        : 'Campaign and its delivery history deleted.', attachmentCleanupFailed ? 'warning' : 'success');
+    }
+
+    function getCampaignAttachmentFiles() {
+      const files = [...document.getElementById('campaignAttachments').files];
+      let totalBytes = 0;
+      return files.map((file) => {
+        const extension = file.name.split('.').pop()?.toLowerCase() || '';
+        const mimeType = newsletterAttachmentMimeTypes[extension];
+        if (!mimeType || (file.type && file.type !== mimeType && file.type !== 'application/octet-stream')) {
+          throw new Error(`“${file.name}” is not a supported document type.`);
+        }
+        if (!file.size || file.size > 5 * 1024 * 1024) {
+          throw new Error(`“${file.name}” must be 5 MB or smaller.`);
+        }
+        totalBytes += file.size;
+        if (totalBytes > newsletterAttachmentTotalLimit) {
+          throw new Error('The combined attachment size must be 8 MB or smaller.');
+        }
+        return { file, extension, mimeType };
+      });
+    }
+
+    async function uploadCampaignAttachments(campaignId, selectedFiles) {
+      const bucket = supabase.storage.from('newsletter-attachments');
+      const uploaded = [];
+      try {
+        for (const selected of selectedFiles) {
+          const storagePath = `campaigns/${campaignId}/${crypto.randomUUID()}.${selected.extension}`;
+          const { error } = await bucket.upload(storagePath, selected.file, {
+            cacheControl: '3600',
+            contentType: selected.mimeType,
+            upsert: false
+          });
+          if (error) throw error;
+          uploaded.push({
+            campaign_id: campaignId,
+            storage_path: storagePath,
+            file_name: selected.file.name,
+            mime_type: selected.mimeType,
+            file_size: selected.file.size
+          });
+        }
+        if (uploaded.length) {
+          const { error } = await supabase.from('newsletter_campaign_attachments').insert(uploaded);
+          if (error) throw error;
+        }
+      } catch (error) {
+        const paths = uploaded.map((item) => item.storage_path);
+        if (paths.length) {
+          const { error: cleanupError } = await bucket.remove(paths);
+          if (cleanupError) throw new Error(`Attachment upload failed and storage cleanup also failed: ${cleanupError.message}`);
+        }
+        throw error;
+      }
+    }
+
+    function updateCampaignPreview() {
+      const subject = document.getElementById('campaignSubject').value.trim();
+      const headline = document.getElementById('campaignHeadline').value.trim();
+      const isApplicantAudience = document.getElementById('campaignAudienceType').value === 'applicants';
+      document.getElementById('campaignPreviewGreeting').textContent = isApplicantAudience ? 'Hello applicant,' : 'Hello subscriber,';
+      document.getElementById('campaignPreviewFooter').textContent = isApplicantAudience
+        ? 'You received this because you applied to Lawrence College & SHS and verified this email address. This message relates to admissions.'
+        : 'You received this because you subscribed to Lawrence updates. Unsubscribe';
+      document.getElementById('campaignPreviewHeadline').textContent = headline || subject || 'Your newsletter headline';
+      document.getElementById('campaignPreviewBody').textContent = document.getElementById('campaignBody').value || 'Your message preview will appear here.';
+
+      const image = document.getElementById('campaignPreviewImage');
+      const selectedImage = document.getElementById('campaignImageFile').files[0];
+      const imageUrl = document.getElementById('campaignImageUrl').value.trim();
+      if (campaignImagePreviewObjectUrl) {
+        URL.revokeObjectURL(campaignImagePreviewObjectUrl);
+        campaignImagePreviewObjectUrl = null;
+      }
+      if (selectedImage) {
+        campaignImagePreviewObjectUrl = URL.createObjectURL(selectedImage);
+        image.src = campaignImagePreviewObjectUrl;
+        image.alt = document.getElementById('campaignImageAlt').value.trim();
+        image.classList.remove('d-none');
+      } else if (imageUrl && /^https:\/\//i.test(imageUrl)) {
+        image.src = imageUrl;
+        image.alt = document.getElementById('campaignImageAlt').value.trim();
+        image.classList.remove('d-none');
+      } else {
+        image.removeAttribute('src');
+        image.classList.add('d-none');
+      }
+
+      const button = document.getElementById('campaignPreviewButton');
+      const buttonLabel = document.getElementById('campaignButtonLabel').value.trim();
+      const buttonUrl = document.getElementById('campaignButtonUrl').value.trim();
+      if (buttonLabel && /^https:\/\//i.test(buttonUrl)) {
+        button.textContent = buttonLabel;
+        button.href = buttonUrl;
+        button.classList.remove('d-none');
+      } else {
+        button.removeAttribute('href');
+        button.classList.add('d-none');
+      }
+
+      const fileNames = [...document.getElementById('campaignAttachments').files].map((file) => file.name);
+      document.getElementById('campaignAttachmentList').textContent = fileNames.length
+        ? `Attached: ${fileNames.join(', ')}`
+        : 'No documents selected.';
     }
 
     async function saveCampaignDraft(event) {
@@ -774,21 +2056,64 @@
       const form = document.getElementById('campaignForm');
       const message = document.getElementById('campaignFormMessage');
       if (!form.reportValidity()) return;
+      const imageFile = document.getElementById('campaignImageFile').files[0];
+      const imageUrlField = document.getElementById('campaignImageUrl').value.trim();
+      let attachmentFiles;
+      try {
+        attachmentFiles = getCampaignAttachmentFiles();
+      } catch (error) {
+        message.textContent = error.message;
+        return;
+      }
+      if (imageFile && imageUrlField) {
+        message.textContent = 'Choose an image URL or upload an image, not both.';
+        return;
+      }
       const button = document.getElementById('saveCampaignDraft');
+      selectedCampaignId = null;
+      document.getElementById('sendCampaignTest').disabled = true;
       button.disabled = true;
       message.textContent = 'Saving draft...';
+      let campaignId = null;
+      let uploadedImageUrl = null;
       try {
+        if (imageFile) uploadedImageUrl = await uploadPublicSiteImage(imageFile, 'newsletter-campaigns');
         const result = await invokeNewsletterFunction('create_campaign', {
           subject: document.getElementById('campaignSubject').value.trim(),
+          headline: document.getElementById('campaignHeadline').value.trim(),
           body_text: document.getElementById('campaignBody').value.trim(),
-          interest_area: document.getElementById('campaignInterest').value
+          audience_type: document.getElementById('campaignAudienceType').value,
+          interest_area: document.getElementById('campaignInterest').value,
+          applicant_status: document.getElementById('campaignApplicantStatus').value,
+          image_url: uploadedImageUrl || imageUrlField,
+          image_alt: document.getElementById('campaignImageAlt').value.trim(),
+          button_label: document.getElementById('campaignButtonLabel').value.trim(),
+          button_url: document.getElementById('campaignButtonUrl').value.trim()
         });
-        selectedCampaignId = result.campaign.id;
+        campaignId = result.campaign.id;
+        await uploadCampaignAttachments(campaignId, attachmentFiles);
+        selectedCampaignId = campaignId;
         document.getElementById('sendCampaignTest').disabled = false;
         message.textContent = 'Draft saved. Send a test before starting the campaign.';
         await loadCampaigns();
       } catch (error) {
-        message.textContent = 'Unable to save the draft. Confirm the newsletter function is deployed and try again.';
+        if (campaignId) {
+          const { error: deleteError } = await supabase.from('newsletter_campaigns').delete().eq('id', campaignId);
+          if (deleteError) {
+            message.textContent = `Draft could not be completed, and the partial draft could not be removed. Delete it from Campaign history.`;
+          } else {
+            message.textContent = error.message || 'Could not finish saving the campaign draft.';
+          }
+        } else {
+          message.textContent = error.message || 'Could not save the campaign draft.';
+        }
+        if (uploadedImageUrl) {
+          const imagePath = new URL(uploadedImageUrl).pathname.split('/object/public/site-media/')[1];
+          if (imagePath) {
+            const { error: cleanupError } = await supabase.storage.from('site-media').remove([decodeURIComponent(imagePath)]);
+            if (cleanupError) message.textContent += ' The uploaded image could not be cleaned up.';
+          }
+        }
       } finally {
         button.disabled = false;
       }
@@ -816,8 +2141,9 @@
         document.getElementById('campaignFormMessage').textContent = 'Live campaign sending is locked. Send a test email while the dashboard is in test mode.';
         return;
       }
-      const eligibleCount = campaign.recipient_count || getCampaignAudienceCount(campaign.interest_area);
-      if (!window.confirm(`Start or continue “${campaign.subject}” for up to ${eligibleCount} confirmed subscribers? This sends real email.`)) return;
+      const eligibleCount = campaign.recipient_count || getCampaignAudienceCount(campaign.audience_type || 'subscribers', campaign.interest_area, campaign.applicant_status || 'all');
+      const audienceLabel = campaign.audience_type === 'applicants' ? 'verified applicants' : 'confirmed subscribers';
+      if (!window.confirm(`Start or continue “${campaign.subject}” for up to ${eligibleCount} ${audienceLabel}? This sends real email.`)) return;
       await processCampaignBatch(campaign.id, 'send_campaign');
     }
 
@@ -942,24 +2268,39 @@
     }
 
     async function showDashboardView(viewName) {
+      const showApplications = viewName === 'applications';
       const showNewsletter = viewName === 'newsletter';
-      document.getElementById('applicationsView').classList.toggle('d-none', showNewsletter);
+      const showSiteContent = viewName === 'site-content';
+      const showActivity = viewName === 'activity';
+      document.getElementById('applicationsView').classList.toggle('d-none', !showApplications);
       document.getElementById('newsletterView').classList.toggle('d-none', !showNewsletter);
-      document.getElementById('refreshButton').classList.toggle('d-none', showNewsletter);
-      document.getElementById('exportButton').classList.toggle('d-none', showNewsletter);
-      document.getElementById('applicationsTab').setAttribute('aria-pressed', String(!showNewsletter));
+      document.getElementById('siteContentView').classList.toggle('d-none', !showSiteContent);
+      document.getElementById('activityView').classList.toggle('d-none', !showActivity);
+      document.getElementById('refreshButton').classList.toggle('d-none', !showApplications);
+      document.getElementById('exportButton').classList.toggle('d-none', !showApplications);
+      document.getElementById('applicationsTab').setAttribute('aria-pressed', String(showApplications));
       document.getElementById('newsletterTab').setAttribute('aria-pressed', String(showNewsletter));
+      const siteContentTab = document.getElementById('siteContentTab');
+      if (siteContentTab) siteContentTab.setAttribute('aria-pressed', String(showSiteContent));
+      document.getElementById('activityTab').setAttribute('aria-pressed', String(showActivity));
       if (showNewsletter) {
         if (!subscribersLoaded) await loadSubscribers();
         if (!campaignsLoaded) await loadCampaigns();
         if (!newsletterModeLoaded) await loadNewsletterMode();
       }
+      if (showSiteContent) {
+        if (!sitePostsLoaded) await loadSitePosts();
+        if (!siteSectionsLoaded) await loadSiteSections();
+        if (!leadershipLoaded) await loadLeadership();
+        if (!galleryLoaded) await loadGallery();
+      }
+      if (showActivity && !activityLoaded) await loadActivity();
     }
 
     function exportApplications() {
-      const columns = ['Reference', 'Applicant', 'Email', 'Phone', 'Program', 'Status', 'Intake Year', 'Submitted'];
+      const columns = ['Reference', 'Applicant', 'Email', 'Email verification', 'Phone', 'Program', 'Status', 'Intake Year', 'Submitted'];
       const rows = getFilteredApplications().map((app) => [
-        app.reference_number, app.applicant_name, app.email, app.phone, app.program_type, app.status,
+        app.reference_number, app.applicant_name, app.email, app.email_verified_at ? 'Verified' : 'Pending verification', app.phone, app.program_type, app.status,
         app.intake_year || app.form_data?.intake_year, app.submitted_at
       ]);
       const escapeCsv = (value) => {
@@ -1041,6 +2382,7 @@
       const coreFields = [
         ['Applicant', app.applicant_name],
         ['Email', app.email],
+        ['Email verification', app.email_verified_at ? `Verified ${new Date(app.email_verified_at).toLocaleString()}` : 'Pending verification'],
         ['Phone', app.phone],
         ['Program category', app.program_type],
         ['Application status', app.status],
@@ -1154,7 +2496,7 @@
       const batch = allApplications.filter((app) => String(app.intake_year || app.form_data?.intake_year || '') === year);
       if (year && batch.length) requestDelete(batch, 'batch');
     });
-    [programFilter, statusFilter, yearFilter, sortFilter].forEach((control) => control.addEventListener('change', () => { currentPage = 1; renderApplications(); }));
+    [programFilter, statusFilter, emailVerificationFilter, yearFilter, sortFilter].forEach((control) => control.addEventListener('change', () => { currentPage = 1; renderApplications(); }));
     searchInput.addEventListener('input', () => { currentPage = 1; renderApplications(); });
     document.getElementById('pageSize').addEventListener('change', () => { currentPage = 1; renderApplications(); });
     document.getElementById('previousPage').addEventListener('click', () => { currentPage -= 1; renderApplications(); });
@@ -1163,11 +2505,46 @@
     document.getElementById('exportButton').addEventListener('click', exportApplications);
     document.getElementById('applicationsTab').addEventListener('click', () => showDashboardView('applications'));
     document.getElementById('newsletterTab').addEventListener('click', () => showDashboardView('newsletter'));
+    document.getElementById('activityTab').addEventListener('click', () => showDashboardView('activity'));
+    document.getElementById('refreshActivity').addEventListener('click', loadActivity);
+    document.getElementById('refreshSitePosts').addEventListener('click', loadSitePosts);
+    document.getElementById('sitePostForm').addEventListener('submit', saveSitePost);
+    document.getElementById('cancelSitePostEdit').addEventListener('click', resetSitePostForm);
+    document.getElementById('sitePostImage').addEventListener('change', updateSitePostImagePreview);
+    ['sitePostImageZoomX', 'sitePostImageZoomY', 'sitePostImagePositionX', 'sitePostImagePositionY', 'sitePostImageFit'].forEach((id) => {
+      document.getElementById(id).addEventListener('input', applySitePostImageFrame);
+      document.getElementById(id).addEventListener('change', applySitePostImageFrame);
+    });
+    document.getElementById('refreshSiteSections').addEventListener('click', loadSiteSections);
+    document.getElementById('siteSectionForm').addEventListener('submit', saveSiteSection);
+    document.getElementById('cancelSiteSectionEdit').addEventListener('click', resetSiteSectionForm);
+    document.getElementById('refreshLeadership').addEventListener('click', loadLeadership);
+    document.getElementById('leadershipForm').addEventListener('submit', saveLeadership);
+    document.getElementById('cancelLeadershipEdit').addEventListener('click', resetLeadershipForm);
+    document.getElementById('refreshGallery').addEventListener('click', loadGallery);
+    document.getElementById('galleryForm').addEventListener('submit', saveGalleryItem);
+    document.getElementById('cancelGalleryEdit').addEventListener('click', resetGalleryForm);
+    document.querySelectorAll('.site-module-tab').forEach((tab) => {
+      tab.addEventListener('click', () => showSiteModule(tab.dataset.module));
+    });
     document.getElementById('refreshSubscribers').addEventListener('click', loadSubscribers);
     document.getElementById('exportSubscribers').addEventListener('click', exportSubscribers);
     document.getElementById('refreshCampaigns').addEventListener('click', loadCampaigns);
     document.getElementById('campaignForm').addEventListener('submit', saveCampaignDraft);
+    document.getElementById('campaignAudienceType').addEventListener('change', () => {
+      updateCampaignAudienceControls();
+      updateCampaignPreview();
+      selectedCampaignId = null;
+      document.getElementById('sendCampaignTest').disabled = true;
+    });
     document.getElementById('campaignInterest').addEventListener('change', updateCampaignAudiencePreview);
+    document.getElementById('campaignApplicantStatus').addEventListener('change', updateCampaignAudiencePreview);
+    document.getElementById('refreshApplicantAudience').addEventListener('click', loadApplications);
+    ['campaignSubject', 'campaignHeadline', 'campaignBody', 'campaignImageUrl', 'campaignImageAlt', 'campaignButtonLabel', 'campaignButtonUrl']
+      .forEach((id) => document.getElementById(id).addEventListener('input', updateCampaignPreview));
+    ['campaignImageFile', 'campaignAttachments'].forEach((id) => {
+      document.getElementById(id).addEventListener('change', updateCampaignPreview);
+    });
     document.getElementById('sendCampaignTest').addEventListener('click', () => {
       if (selectedCampaignId) sendCampaignTest(selectedCampaignId);
     });
@@ -1184,10 +2561,11 @@
       selectedCampaignId = null;
       document.getElementById('sendCampaignTest').disabled = true;
     });
-    ['subscriberSearch', 'subscriberInterestFilter', 'subscriberStatusFilter'].forEach((id) => {
+    ['subscriberSearch', 'subscriberInterestFilter', 'subscriberStatusFilter', 'subscriberSortFilter'].forEach((id) => {
       const control = document.getElementById(id);
       control.addEventListener(id === 'subscriberSearch' ? 'input' : 'change', renderSubscribers);
     });
+    updateCampaignAudienceControls();
 
     button.addEventListener('click', async () => {
       await supabase.auth.signOut();

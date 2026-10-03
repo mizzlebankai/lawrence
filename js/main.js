@@ -332,12 +332,27 @@ document.addEventListener('DOMContentLoaded', function () {
           guardian_phone: formValues.guardian_phone,
           status: programType === 'college' ? 'waitlisted' : 'submitted',
           intake_year: Number(formValues.intake_year || new Date().getFullYear()),
+          consent_given: document.getElementById('fConsent').checked,
           form_data: formValues
         };
-        var { error } = await client.from('applications').insert([payload]);
+        var { data: submission, error } = await client.functions.invoke('newsletter', {
+          body: { action: 'submit_application', application: payload }
+        });
         if (error) throw error;
+        if (submission?.error) throw new Error(submission.error);
+        if (!submission?.application) throw new Error('Application submission was not confirmed.');
 
-        populateApplicationSummary(formValues, payload, payload.status);
+        populateApplicationSummary(formValues, submission.application, payload.status);
+        var verificationNotice = document.getElementById('applicationEmailVerificationNotice');
+        var resendButton = document.getElementById('resendApplicationVerification');
+        if (submission.verification_sent) {
+          verificationNotice.textContent = 'A verification link has been sent to ' + formValues.email + '. Verify this address to receive admission status updates.';
+        } else {
+          verificationNotice.textContent = 'Your application was received, but we could not send the verification email. You can try again below or contact Admissions.';
+          resendButton.classList.remove('d-none');
+        }
+        resendButton.dataset.reference = referenceNumber;
+        resendButton.dataset.email = formValues.email;
 
         applyForm.classList.add('d-none');
         var confirmBox = document.getElementById('applySuccess');
@@ -351,6 +366,31 @@ document.addEventListener('DOMContentLoaded', function () {
       } finally {
         submitButton.disabled = false;
         submitButton.innerHTML = originalButtonText;
+      }
+    });
+
+    var resendVerificationButton = document.getElementById('resendApplicationVerification');
+    resendVerificationButton.addEventListener('click', async function () {
+      var client = window.lawrenceSupabase;
+      if (!client) return;
+      resendVerificationButton.disabled = true;
+      resendVerificationButton.textContent = 'Sending...';
+      try {
+        var { data, error } = await client.functions.invoke('newsletter', {
+          body: {
+            action: 'resend_application_verification',
+            reference_number: resendVerificationButton.dataset.reference,
+            email: resendVerificationButton.dataset.email
+          }
+        });
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+        document.getElementById('applicationEmailVerificationNotice').textContent = data?.message || 'If the application is eligible, a verification link has been sent.';
+        resendVerificationButton.classList.add('d-none');
+      } catch (error) {
+        document.getElementById('applicationEmailVerificationNotice').textContent = 'We could not send the link. Please try again or contact Admissions.';
+        resendVerificationButton.disabled = false;
+        resendVerificationButton.textContent = 'Resend email verification link';
       }
     });
   }

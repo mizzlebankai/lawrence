@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Apply for Admission — Lawrence College &amp; SHS</title>
 <meta name="description" content="Apply online for SHS, WASSCE Remedial or college admission at Lawrence College &amp; SHS in Sunyani.">
+<link rel="canonical" href="https://lawrencecollege.org/apply.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Lawrence College &amp; SHS">
+<meta property="og:title" content="Apply for Admission — Lawrence College &amp; SHS">
+<meta property="og:description" content="Start an application for Senior High School, WASSCE Remedial or a Lawrence College pathway in Sunyani, Ghana.">
+<meta property="og:url" content="https://lawrencecollege.org/apply.html">
+<meta property="og:image" content="https://lawrencecollege.org/assets/campus.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Apply for Admission — Lawrence College &amp; SHS">
+<meta name="twitter:description" content="Start an application for Senior High School, WASSCE Remedial or a Lawrence College pathway in Sunyani, Ghana.">
+<meta name="twitter:image" content="https://lawrencecollege.org/assets/campus.png">
 
 <link rel="icon" href="assets/lawrence-logo.png">
 <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
@@ -40,12 +51,10 @@
       </a>
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
-      <a href="leadership.html">Leadership</a>
       <a href="programs.html">Programs</a>
       <a href="news.html">News</a>
       <a href="gallery.html">Gallery</a>
       <a href="contact.html">Contact</a>
-      <a href="admin/login.html">Admin Login</a>
     </nav>
     <div class="nav-actions">
       <button class="menu-toggle" aria-label="Open menu"><span></span><span></span><span></span></button>
@@ -59,17 +68,15 @@
   <nav>
     <a href="index.html">Home</a>
     <a href="about.html">About</a>
-    <a href="leadership.html">Leadership</a>
     <a href="programs.html">Programs</a>
     <a href="news.html">News</a>
     <a href="gallery.html">Gallery</a>
     <a href="contact.html">Contact</a>
     <a href="apply.html">Apply</a>
-    <a href="admin/login.html">Admin Login</a>
   </nav>
   <div class="mobile-cta">
     <a href="apply.html" class="btn-lawrence btn-lawrence-gold">Apply Now</a>
-    <a href="tel:+233257933174" class="btn-lawrence btn-lawrence-outline">Call the School</a>
+    <a href="tel:+233545856793" class="btn-lawrence btn-lawrence-outline">Call the School</a>
   </div>
 </div>
 
@@ -96,6 +103,8 @@
             <p class="eyebrow mt-3 mb-2">Office of Admissions</p>
             <h2 class="font-display" style="font-size: 1.9rem;">Application submitted successfully.</h2>
             <p class="text-secondary mt-2" style="max-width: 55ch; margin: 0 auto;">Your application has been received for review. Keep the reference number for future correspondence.</p>
+            <p id="applicationEmailVerificationNotice" class="small text-secondary mt-3" role="status" aria-live="polite"></p>
+            <button id="resendApplicationVerification" type="button" class="btn btn-outline-primary btn-sm d-none">Resend email verification link</button>
           </div>
 
           <div id="summarySheet" class="summary-sheet border rounded-4 p-4 p-md-5 bg-light">
@@ -270,7 +279,7 @@
             </div>
             <div class="col-md-6">
               <label class="form-label-lawrence" for="fEntryLevel">Entry Level / Grade</label>
-              <input type="text" class="form-control form-control-lawrence" id="fEntryLevel" placeholder="e.g. Form 1, Remedial, Level 100" required>
+              <input type="text" class="form-control form-control-lawrence" id="fEntryLevel" placeholder="e.g. Form 1, Remedial, Bootcamp" required>
               <div class="invalid-feedback">Please enter an entry level or grade.</div>
             </div>
             <div class="col-md-6">
@@ -439,7 +448,7 @@
           <div class="form-check mb-4">
             <input class="form-check-input" type="checkbox" id="fConsent" required>
             <label class="form-check-label text-secondary small" for="fConsent">
-              I confirm that this information is accurate to the best of my knowledge, understand this submission is not an admission offer, and consent to its use for admissions review and related communication.
+              I confirm that this information is accurate to the best of my knowledge and understand this submission is not an admission offer. I consent to its use for admissions review and related communication. I understand the applicant email must be verified before admission status updates can be sent to it; this does not subscribe the applicant to newsletter or marketing emails.
             </label>
             <div class="invalid-feedback">Please confirm before submitting.</div>
           </div>
@@ -467,7 +476,7 @@
           <p class="footer-intro">Building confident learners and future-ready citizens through practical education, discipline and care.</p>
           <address class="footer-contact">
             <span><i class="bi bi-geo-alt" aria-hidden="true"></i>Lawrence City (Angel City), Adjei Ano South (Dr Berko), Sunyani, Bono Region, Ghana</span>
-            <a href="https://wa.me/233257933174" target="_blank" rel="noopener noreferrer" aria-label="Message Lawrence on WhatsApp at +233 25 793 3174"><i class="bi bi-whatsapp" aria-hidden="true"></i>+233 25 793 3174</a>
+            <a href="https://wa.me/233545856793" target="_blank" rel="noopener noreferrer" aria-label="Message Lawrence on WhatsApp at +233 54 585 6793"><i class="bi bi-whatsapp" aria-hidden="true"></i>+233 54 585 6793</a>
           </address>
         </div>
         <nav class="footer-actions" aria-label="Admissions actions">
@@ -493,6 +502,7 @@
             <li><a href="apply.html">How to Apply</a></li>
             <li><a href="programs.html">Programs</a></li>
             <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="admin/login.html">Staff Login</a></li>
           </ul>
         </div>
         <div>
@@ -504,6 +514,8 @@
           <p class="footer-social-label">Follow Lawrence</p>
           <div class="social-row">
             <a href="https://www.linkedin.com/in/lawrence-college-a5b45743b/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+            <a href="https://www.tiktok.com/@lawrencecollege0" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
+            <a href="https://www.instagram.com/college.lawrence/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
           </div>
         </div>
       </div>
@@ -518,16 +530,14 @@
   </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  window.lawrenceSupabase = window.supabase
-    ? supabase.createClient(
-        'https://ttjgkfsrkxpxeufkikma.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0amdrZnNya3hweGV1Zmtpa21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3ODAxOTYsImV4cCI6MjEwNjM1NjE5Nn0.WeSQ17D0rjM_Jxltvy1X4sjeFG7lRtRDPUjcUdaw8Uk'
-      )
-    : null;
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
+  window.lawrenceSupabase = createClient(
+    'https://ttjgkfsrkxpxeufkikma.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0amdrZnNya3hweGV1Zmtpa21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3ODAxOTYsImV4cCI6MjEwNjM1NjE5Nn0.WeSQ17D0rjM_Jxltvy1X4sjeFG7lRtRDPUjcUdaw8Uk'
+  );
 </script>
 <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="js/main.js?v=20260930-admissions-summary"></script>
+<script src="js/main.js?v=20261003-applicant-email-verification"></script>
 </body>
 </html>
