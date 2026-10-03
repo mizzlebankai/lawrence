@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lawrence: Project Design Summary</title>
+    <style>
+      :root {
+        --primary: #123b68;
+        --accent: #d4a948;
+        --bg: #f6f7fb;
+        --text: #1d2430;
+        --muted: #4b5563;
+        --line: #dfe5ee;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: white;
+        color: var(--text);
+        line-height: 1.6;
+      }
+      .page {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 40px 48px 56px;
+      }
+      h1, h2, h3 {
+        color: var(--primary);
+        margin-top: 28px;
+        margin-bottom: 12px;
+      }
+      h1 {
+        font-size: 36px;
+        border-bottom: 3px solid var(--accent);
+        padding-bottom: 12px;
+      }
+      h2 {
+        font-size: 24px;
+        margin-top: 20px;
+      }
+      p, li {
+        font-size: 15px;
+        color: var(--text);
+      }
+      ul, ol {
+        padding-left: 22px;
+      }
+      code {
+        background: #f3f4f6;
+        padding: 2px 5px;
+        border-radius: 4px;
+        font-size: 13px;
+      }
+      .note {
+        background: #eef4ff;
+        border-left: 5px solid var(--primary);
+        padding: 14px 18px;
+        margin: 18px 0;
+      }
+      .risk {
+        background: #fff8ef;
+        border-left: 5px solid var(--accent);
+        padding: 14px 18px;
+        margin: 18px 0;
+      }
+      .diagram {
+        margin: 22px 0;
+        text-align: center;
+      }
+      pre {
+        background: #f7f8fa;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px 16px;
+        overflow-x: auto;
+        font-size: 12px;
+      }
+      .small {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .header-tag {
+        color: var(--accent);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="header-tag">Lawrence project design summary</div>
+      <h1>Lawrence: Project Design Summary</h1>
+
+      <h2>Executive summary</h2>
+      <p>This project combines a lightweight static website with a managed Supabase data platform. The front end is fast and easy to deploy, while the back end manages applicant records, admin workflows, private file storage, and audience-based newsletters.</p>
+      <p>In simple terms, the design separates:</p>
+      <ul>
+        <li>public website content for visitors</li>
+        <li>private admissions records for applicants</li>
+        <li>admin-only workflows for review and approval</li>
+        <li>campaign and email targeting logic for outreach</li>
+        <li>document and media storage in dedicated buckets</li>
+      </ul>
+      <p>This gives the school a cost-effective and manageable system without building a large custom application server.</p>
+
+      <h2>Why this design works</h2>
+      <ul>
+        <li>Static pages keep the site fast, readable, and cheap to host.</li>
+        <li>Supabase handles authentication, storage, and database logic in a managed environment.</li>
+        <li>Postgres tables enforce structure around admissions, newsletters, and admin access.</li>
+        <li>RLS and role checks protect private actions instead of relying only on the browser UX.</li>
+        <li>Database functions centralize complex logic such as campaign targeting and delivery preparation.</li>
+      </ul>
+
+      <h2>High-level system view</h2>
+      <div class="diagram">
+        <pre class="mermaid">flowchart LR
+    A[Visitor / Applicant] --> B[Static website pages]
+    B --> C[Supabase Auth]
+    B --> D[Application forms]
+    D --> E[applications table]
+    D --> F[newsletter_subscribers table]
+
+    G[Admin user] --> H[Admin dashboard / CMS]
+    H --> C
+    H --> I[admin_users permissions]
+    I --> E
+    I --> J[application_notes]
+    I --> K[newsletter_campaigns]
+
+    E --> L[Private document storage]
+    B --> M[Public website content]
+    M --> N[site content tables]
+    N --> O[Website media bucket]
+    K --> P[newsletter_campaign_deliveries]
+    P --> Q[Email dispatch layer]</pre>
+      </div>
+
+      <h2>Core building blocks</h2>
+      <h3>1. Website layer</h3>
+      <p>The public site is composed of static HTML, CSS, and JavaScript pages such as the home page, admissions page, news page, leadership information, and admin screens.</p>
+      <p>This keeps deployment predictable and fast, while allowing content and campaign updates to happen without a heavy application stack.</p>
+
+      <h3>2. Identity and access layer</h3>
+      <p>The project uses Supabase Auth for user sign-in and a dedicated <code>admin_users</code> table to identify who is allowed to work in the admin area.</p>
+      <p>This is the right pattern for a school environment because it keeps:</p>
+      <ul>
+        <li>public users separated from admin users</li>
+        <li>private application data out of public browser access</li>
+        <li>admin access auditable in one place</li>
+      </ul>
+      <div class="note">Important: the UI check helps with usability, but the real protection must exist in database rules and server-side logic.</div>
+
+      <h3>3. Applicant management</h3>
+      <p>Applicant records are stored in the <code>applications</code> table. The schema includes:</p>
+      <ul>
+        <li>unique reference numbers</li>
+        <li>program type tracking</li>
+        <li>applicant status values</li>
+        <li>form data payloads</li>
+        <li>supporting notes</li>
+        <li>email verification fields</li>
+        <li>submission timestamps</li>
+      </ul>
+      <p>This makes the admissions workflow easier to review and report on without overloading the front end.</p>
+
+      <h3>4. Newsletter and audience logic</h3>
+      <p>The newsletter component is designed to handle both subscribers and applicants with filters for:</p>
+      <ul>
+        <li>audience type</li>
+        <li>interest area</li>
+        <li>applicant status</li>
+      </ul>
+      <p>This is implemented centrally in a database function so the selection logic is consistent and not spread across multiple client-side scripts.</p>
+
+      <h2>How the application flow works</h2>
+      <div class="diagram">
+        <pre class="mermaid">sequenceDiagram
+    participant Applicant
+    participant Site
+    participant DB as Supabase Database
+    participant Storage
+    participant Admin
+
+    Applicant->>Site: Submit application
+    Site->>DB: Create application record
+    Site->>Storage: Upload supporting files
+    DB-->>Site: Confirmation + reference number
+    Site-->>Applicant: Success message
+    Admin->>DB: Review applicant info
+    Admin->>DB: Update status or add notes</pre>
+      </div>
+
+      <p>Typical flow:</p>
+      <ol>
+        <li>A visitor submits an application.</li>
+        <li>A record is created with a unique reference number.</li>
+        <li>Supporting documents are stored in a private bucket, not embedded in the record.</li>
+        <li>Admin staff review the application and adjust its status.</li>
+        <li>The applicant receives confirmation or follow-up communication based on the workflow.</li>
+      </ol>
+
+      <h2>Why email verification is important</h2>
+      <p>The design includes fields for:</p>
+      <ul>
+        <li>verification tokens</li>
+        <li>expiry timestamps</li>
+        <li>verification status</li>
+        <li>unique hash storage instead of raw tokens</li>
+      </ul>
+      <p>This is a strong design choice because it reduces risk of:</p>
+      <ul>
+        <li>fake or invalid addresses</li>
+        <li>sending campaigns to unverified applicants</li>
+        <li>stale verification links being reused</li>
+      </ul>
+
+      <h2>Risks and what to fix early</h2>
+
+      <h3>1. Storage bucket mismatch</h3>
+      <div class="risk">
+        <p><strong>Risk:</strong> an upload fails because the app is configured for a bucket that does not exist in the active project or was created in the wrong Supabase project.</p>
+        <p><strong>Impact:</strong> application files fail to upload, admin file access breaks, and users lose confidence in the system.</p>
+        <p><strong>Fix:</strong> keep bucket names and project mapping in a single deployment checklist; confirm the active project and storage bucket match exactly; test uploads after every environment change.</p>
+      </div>
+
+      <h3>2. Admin authorization drift</h3>
+      <div class="risk">
+        <p><strong>Risk:</strong> the browser hides admin controls, but the database remains permissive.</p>
+        <p><strong>Impact:</strong> unauthorized users can change records and data integrity is compromised.</p>
+        <p><strong>Fix:</strong> use <code>admin_users</code> as the source of truth, enforce authorization at the database boundary, and treat the browser check as a convenience layer, not a security control.</p>
+      </div>
+
+      <h3>3. Campaign audience errors</h3>
+      <div class="risk">
+        <p><strong>Risk:</strong> a newsletter sends to the wrong audience or applicant recipients are included when only subscribers were intended.</p>
+        <p><strong>Impact:</strong> incorrect outreach to parents, applicants, or staff, and reputational damage.</p>
+        <p><strong>Fix:</strong> keep audience logic centralized in the database function, retain strict recipient checks and unique indexes, and test each audience and status combination before launch.</p>
+      </div>
+
+      <h3>4. Stale verification tokens</h3>
+      <div class="risk">
+        <p><strong>Risk:</strong> expired or duplicate tokens remain active and an old link is still accepted after a new verification cycle.</p>
+        <p><strong>Impact:</strong> confusing applicant experience, data inconsistency, and campaign targeting based on outdated states.</p>
+        <p><strong>Fix:</strong> invalidate prior token values when a new verification is created, clear verification data after success, and periodically remove expired tokens and related pending records.</p>
+      </div>
+
+      <h3>5. Orphaned media</h3>
+      <div class="risk">
+        <p><strong>Risk:</strong> a replaced image is left behind or deleted content still leaves storage objects behind.</p>
+        <p><strong>Impact:</strong> wasted storage, cluttered media library, and difficult cleanup later.</p>
+        <p><strong>Fix:</strong> delete old media when replacing files, check for references before removing items, and add cleanup jobs for orphaned files.</p>
+      </div>
+
+      <h2>Operational notes</h2>
+      <h3>Recommended deployment checklist</h3>
+      <ul>
+        <li>confirm the correct Supabase project is selected</li>
+        <li>confirm storage buckets exist and are configured correctly</li>
+        <li>ensure RLS policies are live</li>
+        <li>verify admin users are active and valid</li>
+        <li>test verification flows</li>
+        <li>validate campaign audience rules</li>
+      </ul>
+
+      <h3>Strong governance practices</h3>
+      <ul>
+        <li>Keep security checks in the database, not only in the browser.</li>
+        <li>Use dedicated buckets for private and public media.</li>
+        <li>Validate all upload and email workflows before release.</li>
+        <li>Keep recovery and deployment notes for the right project and environment.</li>
+      </ul>
+
+      <h2>Summary</h2>
+      <p>This project is a well-structured, low-complexity platform for a school or institution that needs:</p>
+      <ul>
+        <li>a public-facing website</li>
+        <li>a private applicant system</li>
+        <li>a managed admin workflow</li>
+        <li>email and campaign targeting</li>
+        <li>secure file handling</li>
+      </ul>
+      <p>The core strength of the design is separation of concerns: public content, private admissions, and admin-only operations are kept apart in a way that is easier to maintain and safer to operate.</p>
+      <p class="small">The biggest operational risks to watch are storage configuration drift, authorization gaps, stale verification state, mis-targeted newsletters, and media cleanup inconsistency.</p>
+    </div>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true, securityLevel: 'loose' });
+    </script>
+  </body>
+</html>

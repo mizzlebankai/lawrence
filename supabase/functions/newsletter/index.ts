@@ -6,16 +6,18 @@ const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const siteUrl = (Deno.env.get('PUBLIC_SITE_URL') || '').replace(/\/$/, '');
 const senderEmail = Deno.env.get('BREVO_SENDER_EMAIL') || '';
 const senderName = Deno.env.get('BREVO_SENDER_NAME') || 'Lawrence College & SHS';
-const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') || siteUrl)
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const allowedOrigins = [
+  ...((Deno.env.get('ALLOWED_ORIGINS') || '').split(',').map((origin) => origin.trim())),
+  siteUrl
+].filter(Boolean);
 
 const service = createClient(supabaseUrl, serviceRoleKey, {
   auth: { persistSession: false, autoRefreshToken: false }
 });
 
 const interests = new Set(['general', 'shs', 'remedial', 'college']);
+const audienceTypes = new Set(['subscribers', 'applicants']);
+const applicantStatuses = new Set(['all', 'submitted', 'in_review', 'waitlisted', 'accepted', 'rejected']);
 const allowedStatuses = new Set(['active', 'unsubscribed', 'bounced']);
 
 function jsonResponse(body: unknown, status: number, origin: string | null) {
@@ -90,7 +92,134 @@ function escapeHtml(value: string) {
   })[character] || character);
 }
 
-async function sendEmail(to: string, subject: string, textContent: string, htmlContent?: string) {
+const attachmentMimeTypes: Record<string, string> = {
+  pdf: 'application/pdf',
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ppt: 'application/vnd.ms-powerpoint',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  xls: 'application/vnd.ms-excel',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  txt: 'text/plain',
+  csv: 'text/csv'
+};
+const maxCampaignAttachmentBytes = 8 * 1024 * 1024;
+
+type NewsletterCampaignEmail = {
+  subject: string;
+  body_text: string;
+  headline: string | null;
+  image_url: string | null;
+  image_alt: string;
+  button_label: string | null;
+  button_url: string | null;
+  audience_type?: string;
+};
+
+function safeHttpsUrl(value: string | null | undefined) {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'https:' || url.username || url.password || value.length > 2048) return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+function renderCampaignEmail(campaign: NewsletterCampaignEmail, recipientName: string, unsubscribeUrl: string | null, isTest = false) {
+  const headline = String(campaign.headline || campaign.subject);
+  const bodyText = String(campaign.body_text || '');
+  const safeName = escapeHtml(recipientName || 'there');
+  const safeHeadline = escapeHtml(headline);
+  const safeBody = escapeHtml(bodyText).replace(/\r?\n/g, '<br>');
+  const safeUnsubscribeUrl = unsubscribeUrl ? escapeHtml(unsubscribeUrl) : '';
+  const imageUrl = campaign.image_url ? safeHttpsUrl(String(campaign.image_url)) : null;
+  if (campaign.image_url && !imageUrl) throw new Error('Campaign image URL must use HTTPS.');
+  const imageAlt = escapeHtml(String(campaign.image_alt || headline));
+  const buttonLabel = String(campaign.button_label || '');
+  const buttonUrl = campaign.button_url ? safeHttpsUrl(String(campaign.button_url)) : null;
+  if (Boolean(buttonLabel) !== Boolean(campaign.button_url) || (campaign.button_url && !buttonUrl)) {
+    throw new Error('Campaign button needs both a label and a valid HTTPS URL.');
+  }
+
+  const logoUrl = escapeHtml(`${siteUrl}/assets/lawrence-logo.png`);
+  const imageBlock = imageUrl
+    ? `<tr><td style="padding:0 32px 24px"><img src="${escapeHtml(imageUrl)}" alt="${imageAlt}" width="536" style="display:block;width:100%;max-width:536px;height:auto;border:0;border-radius:8px"></td></tr>`
+    : '';
+  const buttonBlock = buttonUrl
+    ? `<tr><td align="center" style="padding:8px 32px 32px"><a href="${escapeHtml(buttonUrl)}" style="display:inline-block;padding:14px 24px;background:#b79452;color:#142d4c;text-decoration:none;font-weight:bold;border-radius:4px">${escapeHtml(buttonLabel)}</a></td></tr>`
+    : '';
+  const footerHtml = isTest
+    ? 'This is a test email sent to preview the Lawrence newsletter template.'
+    : unsubscribeUrl
+    ? `You received this because you subscribed to Lawrence updates. <a href="${safeUnsubscribeUrl}" style="color:#142d4c">Unsubscribe</a>.`
+    : campaign.audience_type === 'applicants'
+      ? 'You received this because you applied to Lawrence College &amp; SHS and verified this email address. This message relates to admissions.'
+      : 'This is a test email sent to preview the Lawrence newsletter template.';
+  const htmlContent = `<!doctype html><html lang="en"><body style="margin:0;padding:24px 8px;background:#f3f5f7;font-family:Arial,Helvetica,sans-serif;color:#293746"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;margin:0 auto;background:#fff;border-collapse:collapse"><tr><td style="padding:24px 32px;background:#142d4c;border-bottom:4px solid #b79452"><img src="${logoUrl}" alt="Lawrence College &amp; SHS" width="58" height="58" style="display:block;width:58px;height:58px;object-fit:contain"><p style="margin:12px 0 0;color:#fff;font-size:13px;letter-spacing:1px">LAWRENCE COLLEGE &amp; SHS</p></td></tr>${imageBlock}<tr><td style="padding:8px 32px 0"><p style="margin:0 0 12px;color:#6b7280;font-size:14px">Hello ${safeName},</p><h1 style="margin:0 0 20px;color:#142d4c;font-size:26px;line-height:1.25">${safeHeadline}</h1><div style="font-size:16px;line-height:1.7">${safeBody}</div></td></tr>${buttonBlock}<tr><td style="padding:20px 32px;background:#f3f5f7;color:#667085;font-size:12px;line-height:1.6">${footerHtml}</td></tr></table></body></html>`;
+  const footerText = isTest
+    ? 'This is a test email sent to preview the Lawrence newsletter template.'
+    : unsubscribeUrl
+    ? `You received this because you subscribed to Lawrence updates. Unsubscribe: ${unsubscribeUrl}`
+    : campaign.audience_type === 'applicants'
+      ? 'You received this because you applied to Lawrence College & SHS and verified this email address. This message relates to admissions.'
+      : 'This is a test email sent to preview the Lawrence newsletter template.';
+  const textContent = `Hello ${recipientName || 'there'},\n\n${headline}\n\n${bodyText}${buttonUrl ? `\n\n${buttonLabel}: ${buttonUrl}` : ''}\n\n${footerText}`;
+  return { htmlContent, textContent };
+}
+
+async function loadCampaignAttachments(campaignId: string) {
+  const { data, error } = await service
+    .from('newsletter_campaign_attachments')
+    .select('storage_path, file_name, mime_type, file_size')
+    .eq('campaign_id', campaignId);
+  if (error) throw error;
+
+  const rows = data || [];
+  const recordedTotal = rows.reduce((total, file) => total + Number(file.file_size || 0), 0);
+  if (recordedTotal > maxCampaignAttachmentBytes) throw new Error('Campaign attachments exceed the 8 MB total limit.');
+
+  const attachments = [];
+  let actualTotal = 0;
+  for (const file of rows) {
+    const fileName = String(file.file_name || '');
+    const extension = fileName.split('.').pop()?.toLowerCase() || '';
+    const mimeType = attachmentMimeTypes[extension];
+    if (!mimeType || mimeType !== file.mime_type || !file.storage_path.startsWith(`campaigns/${campaignId}/`)) {
+      throw new Error('Campaign contains an invalid attachment record.');
+    }
+
+    const { data: blob, error: downloadError } = await service.storage
+      .from('newsletter-attachments')
+      .download(file.storage_path);
+    if (downloadError) throw downloadError;
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    if (bytes.length !== Number(file.file_size) || bytes.length > 5 * 1024 * 1024) {
+      throw new Error('Campaign attachment size does not match its stored metadata.');
+    }
+    actualTotal += bytes.length;
+    if (actualTotal > maxCampaignAttachmentBytes) throw new Error('Campaign attachments exceed the 8 MB total limit.');
+
+    let binary = '';
+    for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+    }
+    attachments.push({
+      name: fileName.replace(/[^\w.\- ]/g, '_').slice(0, 120) || 'newsletter-document',
+      content: btoa(binary)
+    });
+  }
+  return attachments;
+}
+
+async function sendEmail(
+  to: string,
+  subject: string,
+  textContent: string,
+  htmlContent?: string,
+  attachments: Array<{ name: string; content: string }> = []
+) {
   const apiKey = Deno.env.get('BREVO_API_KEY');
   if (!apiKey || !senderEmail || !validEmail(senderEmail)) {
     throw new Error('Brevo sender configuration is incomplete.');
@@ -104,7 +233,8 @@ async function sendEmail(to: string, subject: string, textContent: string, htmlC
       to: [{ email: to }],
       subject,
       textContent,
-      ...(htmlContent ? { htmlContent } : {})
+      ...(htmlContent ? { htmlContent } : {}),
+      ...(attachments.length ? { attachment: attachments } : {})
     })
   });
 
@@ -116,6 +246,138 @@ async function sendEmail(to: string, subject: string, textContent: string, htmlC
 
   const result = await response.json().catch(() => ({}));
   return typeof result.messageId === 'string' ? result.messageId : null;
+}
+
+async function consumePublicRateLimits(request: Request, email: string, scope: string, emailLimit: number) {
+  const forwardedIps = request.headers.get('x-forwarded-for') || '';
+  const requesterIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-real-ip') || forwardedIps.split(',')[0].trim();
+  const rateBuckets = [
+    ...(requesterIp ? [{ key: `${scope}:ip:${requesterIp}`, max: 10 }] : []),
+    { key: `${scope}:email:${email}`, max: emailLimit }
+  ];
+  for (const bucket of rateBuckets) {
+    const { data: allowed, error } = await service.rpc('consume_newsletter_signup_limit', {
+      p_bucket_hash: await sha256(bucket.key),
+      p_max_attempts: bucket.max,
+      p_window_seconds: 3600
+    });
+    if (error) throw error;
+    if (!allowed) throw new Response('Too many attempts. Please try again later.', { status: 429 });
+  }
+}
+
+async function sendApplicationVerification(application: { id: string; applicant_name: string; email: string }, token: string) {
+  if (!siteUrl) throw new Error('Public site URL is not configured.');
+  const confirmationUrl = `${siteUrl}/newsletter-action.html?action=verify_application_email&token=${encodeURIComponent(token)}`;
+  const safeName = escapeHtml(application.applicant_name);
+  const safeUrl = escapeHtml(confirmationUrl);
+  await sendEmail(
+    application.email,
+    'Verify your email for Lawrence admissions updates',
+    `Hello ${application.applicant_name},\n\nPlease verify this email address to receive admission status updates for your Lawrence College & SHS application: ${confirmationUrl}\n\nIf you did not apply, you can ignore this email.`,
+    `<p>Hello ${safeName},</p><p>Please verify this email address to receive admission status updates for your Lawrence College &amp; SHS application.</p><p><a href="${safeUrl}">Verify my email address</a></p><p>If you did not apply, you can ignore this email.</p>`
+  );
+}
+
+async function submitApplication(payload: Record<string, unknown>, request: Request) {
+  const application = payload.application as Record<string, unknown> | undefined;
+  if (!application || typeof application !== 'object' || Array.isArray(application)) {
+    throw new Response('Application details are required.', { status: 400 });
+  }
+  const email = String(application.email || '').trim().toLowerCase();
+  const applicantName = String(application.applicant_name || '').trim().slice(0, 160);
+  const referenceNumber = String(application.reference_number || '').trim();
+  const programType = String(application.program_type || '');
+  const validPrograms = new Set(['shs', 'remedial', 'college']);
+  if (String(payload.website || '').trim()) return { ok: true, message: 'Application received.' };
+  if (!validEmail(email)) throw new Response('Enter a working email address.', { status: 400 });
+  if (!applicantName || !validPrograms.has(programType)) throw new Response('Check the required application details.', { status: 400 });
+  if (!/^L(?:SHS|REM|COL)-\d{4}-\d{4}$/.test(referenceNumber)) throw new Response('Application reference is invalid.', { status: 400 });
+  if (application.consent_given !== true) throw new Response('Application consent is required.', { status: 400 });
+  const formData = application.form_data;
+  if (!formData || typeof formData !== 'object' || Array.isArray(formData)) {
+    throw new Response('Application form details are invalid.', { status: 400 });
+  }
+
+  await consumePublicRateLimits(request, email, 'application', 3);
+  const token = randomToken();
+  const { data: savedApplication, error } = await service.from('applications').insert({
+    reference_number: referenceNumber,
+    program_type: programType,
+    applicant_name: applicantName,
+    email,
+    phone: String(application.phone || '').trim().slice(0, 40) || null,
+    guardian_name: String(application.guardian_name || '').trim().slice(0, 160) || null,
+    guardian_phone: String(application.guardian_phone || '').trim().slice(0, 40) || null,
+    status: programType === 'college' ? 'waitlisted' : 'submitted',
+    intake_year: Number(application.intake_year) || null,
+    form_data: formData,
+    email_verification_token_hash: await sha256(token),
+    email_verification_expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
+  }).select('id, reference_number, submitted_at').single();
+  if (error) throw error;
+
+  let verificationSent = false;
+  try {
+    await sendApplicationVerification({ id: savedApplication.id, applicant_name: applicantName, email }, token);
+    verificationSent = true;
+  } catch (error) {
+    console.error('Application verification email failed:', savedApplication.id, error instanceof Error ? error.message : error);
+  }
+  return {
+    ok: true,
+    application: {
+      reference_number: savedApplication.reference_number,
+      submitted_at: savedApplication.submitted_at
+    },
+    verification_sent: verificationSent
+  };
+}
+
+async function verifyApplicationEmail(token: string) {
+  if (token.length < 32 || token.length > 200) throw new Response('This verification link is invalid or expired.', { status: 400 });
+  const { data: application, error } = await service.from('applications')
+    .select('id')
+    .eq('email_verification_token_hash', await sha256(token))
+    .gt('email_verification_expires_at', new Date().toISOString())
+    .is('email_verified_at', null)
+    .maybeSingle();
+  if (error) throw error;
+  if (!application) throw new Response('This verification link is invalid, expired, or already used.', { status: 400 });
+
+  const { error: updateError } = await service.from('applications').update({
+    email_verified_at: new Date().toISOString(),
+    email_verification_token_hash: null,
+    email_verification_expires_at: null
+  }).eq('id', application.id);
+  if (updateError) throw updateError;
+  return { ok: true, message: 'Your email is verified. Lawrence can now send admission status updates to this address.' };
+}
+
+async function resendApplicationVerification(payload: Record<string, unknown>, request: Request) {
+  const email = String(payload.email || '').trim().toLowerCase();
+  const referenceNumber = String(payload.reference_number || '').trim();
+  if (!validEmail(email) || !referenceNumber) throw new Response('Enter the application email and reference number.', { status: 400 });
+  await consumePublicRateLimits(request, email, 'application-verification', 3);
+
+  const { data: application, error } = await service.from('applications')
+    .select('id, applicant_name, email, email_verified_at')
+    .eq('reference_number', referenceNumber)
+    .eq('email', email)
+    .maybeSingle();
+  if (error) throw error;
+  if (!application || application.email_verified_at) {
+    return { ok: true, message: 'If the application is eligible, a verification link has been sent.' };
+  }
+
+  const token = randomToken();
+  const { error: updateError } = await service.from('applications').update({
+    email_verification_token_hash: await sha256(token),
+    email_verification_expires_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString()
+  }).eq('id', application.id);
+  if (updateError) throw updateError;
+  await sendApplicationVerification(application, token);
+  return { ok: true, message: 'A new verification link has been sent. Check your inbox.' };
 }
 
 async function requireAdmin(request: Request) {
@@ -257,18 +519,42 @@ async function unsubscribe(token: string) {
 async function createCampaign(payload: Record<string, unknown>, userId: string) {
   const subject = String(payload.subject || '').trim();
   const bodyText = String(payload.body_text || '').trim();
+  const headline = String(payload.headline || '').trim() || null;
+  const imageUrlValue = String(payload.image_url || '').trim();
+  const imageUrl = safeHttpsUrl(imageUrlValue);
+  const imageAlt = String(payload.image_alt || '').trim().slice(0, 200);
+  const buttonLabelValue = String(payload.button_label || '').trim();
+  const buttonUrlValue = String(payload.button_url || '').trim();
+  const buttonUrl = safeHttpsUrl(buttonUrlValue);
   const interestArea = String(payload.interest_area || 'general');
+  const audienceType = String(payload.audience_type || 'subscribers');
+  const applicantStatus = String(payload.applicant_status || 'all');
   if (subject.length < 3 || subject.length > 150) throw new Response('Subject must be between 3 and 150 characters.', { status: 400 });
   if (!bodyText || bodyText.length > 12000) throw new Response('Message must be between 1 and 12,000 characters.', { status: 400 });
+  if (headline && headline.length > 150) throw new Response('Headline must be 150 characters or fewer.', { status: 400 });
+  if (imageUrlValue && !imageUrl) throw new Response('Choose a valid HTTPS image URL.', { status: 400 });
+  if (Boolean(buttonLabelValue) !== Boolean(buttonUrlValue) || (buttonUrlValue && !buttonUrl)) {
+    throw new Response('Provide both a button label and a valid HTTPS button URL.', { status: 400 });
+  }
+  if (buttonLabelValue.length > 60) throw new Response('Button label must be 60 characters or fewer.', { status: 400 });
   if (!interests.has(interestArea)) throw new Response('Select a valid recipient group.', { status: 400 });
+  if (!audienceTypes.has(audienceType)) throw new Response('Select a valid audience.', { status: 400 });
+  if (!applicantStatuses.has(applicantStatus)) throw new Response('Select a valid applicant status.', { status: 400 });
 
   const { data, error } = await service.from('newsletter_campaigns').insert({
     subject,
     body_text: bodyText,
+    headline,
+    image_url: imageUrl,
+    image_alt: imageAlt,
+    button_label: buttonLabelValue || null,
+    button_url: buttonUrl,
+    audience_type: audienceType,
     interest_area: interestArea,
+    applicant_status: applicantStatus,
     created_by: userId,
     status: 'draft'
-  }).select('id, subject, interest_area, status, created_at').single();
+  }).select('id, subject, audience_type, interest_area, applicant_status, status, created_at').single();
   if (error) throw error;
   return { ok: true, campaign: data };
 }
@@ -277,10 +563,15 @@ async function sendTest(payload: Record<string, unknown>) {
   const email = String(payload.email || '').trim().toLowerCase();
   const campaignId = String(payload.campaign_id || '');
   if (!validEmail(email)) throw new Response('Enter a valid test recipient email.', { status: 400 });
-  const { data: campaign, error } = await service.from('newsletter_campaigns').select('subject, body_text').eq('id', campaignId).maybeSingle();
+  const { data: campaign, error } = await service.from('newsletter_campaigns')
+    .select('subject, body_text, headline, image_url, image_alt, button_label, button_url, audience_type')
+    .eq('id', campaignId)
+    .maybeSingle();
   if (error) throw error;
   if (!campaign) throw new Response('Campaign not found.', { status: 404 });
-  const messageId = await sendEmail(email, `[TEST] ${campaign.subject}`, campaign.body_text);
+  const attachments = await loadCampaignAttachments(campaignId);
+  const { htmlContent, textContent } = renderCampaignEmail(campaign, '', null, true);
+  const messageId = await sendEmail(email, `[TEST] ${campaign.subject}`, textContent, htmlContent, attachments);
   return { ok: true, message_id: messageId };
 }
 
@@ -296,6 +587,7 @@ async function sendCampaign(payload: Record<string, unknown>) {
   const { data: campaign, error: campaignError } = await service.from('newsletter_campaigns').select('*').eq('id', campaignId).maybeSingle();
   if (campaignError) throw campaignError;
   if (!campaign) throw new Response('Campaign not found.', { status: 404 });
+  const attachments = await loadCampaignAttachments(campaignId);
   if (campaign.status === 'draft') {
     const { data: preparedCount, error: prepareError } = await service.rpc('prepare_newsletter_campaign', { p_campaign_id: campaignId });
     if (prepareError) throw prepareError;
@@ -318,19 +610,17 @@ async function sendCampaign(payload: Record<string, unknown>) {
 
   for (const delivery of deliveries || []) {
     try {
-      const unsubscribeToken = await unsubscribeTokenFor(delivery.subscriber_id);
-      const { error: tokenError } = await service.from('newsletter_subscribers')
-        .update({ unsubscribe_token_hash: await sha256(unsubscribeToken) })
-        .eq('id', delivery.subscriber_id);
-      if (tokenError) throw tokenError;
-
-      const unsubscribeUrl = `${siteUrl}/newsletter-action.html?action=unsubscribe&token=${encodeURIComponent(unsubscribeToken)}`;
-      const safeName = escapeHtml(delivery.full_name || 'there');
-      const safeBody = escapeHtml(campaign.body_text).replaceAll('\n', '<br>');
-      const safeUnsubscribeUrl = escapeHtml(unsubscribeUrl);
-      const htmlContent = `<p>Hello ${safeName},</p><div>${safeBody}</div><p style="margin-top:32px;font-size:12px;color:#666">You received this because you subscribed to Lawrence updates. <a href="${safeUnsubscribeUrl}">Unsubscribe</a>.</p>`;
-      const textContent = `${campaign.body_text}\n\nYou received this because you subscribed to Lawrence updates. Unsubscribe: ${unsubscribeUrl}`;
-      const messageId = await sendEmail(delivery.email, campaign.subject, textContent, htmlContent);
+      let unsubscribeUrl: string | null = null;
+      if (delivery.subscriber_id) {
+        const unsubscribeToken = await unsubscribeTokenFor(delivery.subscriber_id);
+        const { error: tokenError } = await service.from('newsletter_subscribers')
+          .update({ unsubscribe_token_hash: await sha256(unsubscribeToken) })
+          .eq('id', delivery.subscriber_id);
+        if (tokenError) throw tokenError;
+        unsubscribeUrl = `${siteUrl}/newsletter-action.html?action=unsubscribe&token=${encodeURIComponent(unsubscribeToken)}`;
+      }
+      const { htmlContent, textContent } = renderCampaignEmail(campaign, delivery.full_name || '', unsubscribeUrl);
+      const messageId = await sendEmail(delivery.email, campaign.subject, textContent, htmlContent, attachments);
       const { error: sentError } = await service.from('newsletter_campaign_deliveries').update({
         status: 'sent', provider_message_id: messageId, sent_at: new Date().toISOString(), last_error: null
       }).eq('id', delivery.id);
@@ -415,6 +705,12 @@ Deno.serve(async (request: Request) => {
       result = await confirmSubscription(String(payload.token || ''));
     } else if (action === 'unsubscribe') {
       result = await unsubscribe(String(payload.token || ''));
+    } else if (action === 'submit_application') {
+      result = await submitApplication(payload, request);
+    } else if (action === 'resend_application_verification') {
+      result = await resendApplicationVerification(payload, request);
+    } else if (action === 'verify_application_email') {
+      result = await verifyApplicationEmail(String(payload.token || ''));
     } else if (['get_mode', 'create_campaign', 'send_test', 'send_campaign', 'retry_failed'].includes(action)) {
       const user = await requireAdmin(request);
       result = action === 'get_mode'
