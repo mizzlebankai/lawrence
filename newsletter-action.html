@@ -32,14 +32,20 @@
     <a href="index.html" class="d-inline-block mt-4">Return to Lawrence</a>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
+
     const actionParams = new URLSearchParams(window.location.search);
     const action = actionParams.get('action');
     const token = actionParams.get('token') || '';
     const actionButton = document.getElementById('actionButton');
     const actionMessage = document.getElementById('actionMessage');
     let newsletterClient = null;
+
+    window.lawrenceSupabase = createClient(
+      'https://ttjgkfsrkxpxeufkikma.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0amdrZnNya3hweGV1Zmtpa21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3ODAxOTYsImV4cCI6MjEwNjM1NjE5Nn0.WeSQ17D0rjM_Jxltvy1X4sjeFG7lRtRDPUjcUdaw8Uk'
+    );
 
     if (action === 'confirm') {
       document.getElementById('actionKicker').textContent = 'Subscription confirmation';
@@ -51,19 +57,21 @@
       document.getElementById('actionHeading').textContent = 'Unsubscribe from updates';
       document.getElementById('actionDescription').textContent = 'You will stop receiving Lawrence newsletter emails. This will not affect admissions messages.';
       actionButton.textContent = 'Unsubscribe';
+    } else if (action === 'verify_application_email') {
+      document.getElementById('actionKicker').textContent = 'Admissions email verification';
+      document.getElementById('actionHeading').textContent = 'Verify your email address';
+      document.getElementById('actionDescription').textContent = 'Verify this address so Lawrence can send you admission status updates.';
+      actionButton.textContent = 'Verify email address';
     } else {
       document.getElementById('actionHeading').textContent = 'This link is not valid';
       document.getElementById('actionDescription').textContent = 'Open the confirmation or unsubscribe link from a Lawrence email.';
     }
 
-    if (token && (action === 'confirm' || action === 'unsubscribe') && window.supabase) {
-      newsletterClient = window.supabase.createClient(
-        'https://ttjgkfsrkxpxeufkikma.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0amdrZnNya3hweGV1Zmtpa21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3ODAxOTYsImV4cCI6MjEwNjM1NjE5Nn0.WeSQ17D0rjM_Jxltvy1X4sjeFG7lRtRDPUjcUdaw8Uk'
-      );
+    if (token && (action === 'confirm' || action === 'unsubscribe' || action === 'verify_application_email')) {
+      newsletterClient = window.lawrenceSupabase;
       actionButton.disabled = false;
       history.replaceState(null, '', `${window.location.pathname}?action=${encodeURIComponent(action)}`);
-    } else if (action === 'confirm' || action === 'unsubscribe') {
+    } else if (action === 'confirm' || action === 'unsubscribe' || action === 'verify_application_email') {
       actionMessage.textContent = 'This link is incomplete or the newsletter service is unavailable.';
     }
 
@@ -71,13 +79,16 @@
       if (!newsletterClient || !token) return;
       actionButton.disabled = true;
       actionMessage.textContent = 'Processing...';
-      const { data, error } = await newsletterClient.functions.invoke('newsletter', { body: { action, token } });
+      const functionAction = action === 'verify_application_email' ? 'verify_application_email' : action;
+      const { data, error } = await newsletterClient.functions.invoke('newsletter', { body: { action: functionAction, token } });
       if (error) {
         actionMessage.textContent = 'We could not complete this request. The link may have expired; please try again or contact Lawrence.';
         actionButton.disabled = false;
         return;
       }
-      document.getElementById('actionHeading').textContent = action === 'confirm' ? 'Subscription confirmed' : 'You are unsubscribed';
+      document.getElementById('actionHeading').textContent = action === 'confirm'
+        ? 'Subscription confirmed'
+        : action === 'verify_application_email' ? 'Email verified' : 'You are unsubscribed';
       document.getElementById('actionDescription').textContent = data?.message || 'Your email preferences have been updated.';
       actionButton.hidden = true;
       actionMessage.textContent = '';

@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
   <title>Lawrence Admin Login</title>
   <link rel="icon" href="../assets/lawrence-logo.png">
   <link rel="stylesheet" href="../vendor/bootstrap/css/bootstrap.min.css">
@@ -187,7 +188,7 @@
     <form id="adminLoginForm" class="mfa-view">
       <div class="mb-3">
         <label for="email" class="form-label fw-bold">Email</label>
-        <input id="email" name="email" class="form-control" type="email" placeholder="admin@lawrencecollege.edu.gh" required>
+        <input id="email" name="email" class="form-control" type="email" placeholder="Enter your staff email" required>
       </div>
       <div class="mb-3">
         <label for="password" class="form-label fw-bold">Password</label>
@@ -217,20 +218,16 @@
   </div>
 
   <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
 
     const supabaseUrl = 'https://ttjgkfsrkxpxeufkikma.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0amdrZnNya3hweGV1Zmtpa21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3ODAxOTYsImV4cCI6MjEwNjM1NjE5Nn0.WeSQ17D0rjM_Jxltvy1X4sjeFG7lRtRDPUjcUdaw8Uk';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const form = document.getElementById('adminLoginForm');
-    const mfaForm = document.getElementById('mfaForm');
     const adminCard = document.querySelector('.admin-card');
     const statusBox = document.getElementById('loginStatus');
-    const mfaCode = document.getElementById('mfaCode');
     const loginSubmit = document.getElementById('loginSubmit');
-    const mfaSubmit = document.getElementById('mfaSubmit');
-    let mfaFactorId = null;
 
     function showStatus(message, type) {
       statusBox.textContent = message;
@@ -261,31 +258,6 @@
       window.location.href = 'dashboard.html';
     }
 
-    async function getRequiredMfaFactor() {
-      const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (assuranceError) throw assuranceError;
-      if (assurance?.nextLevel !== 'aal2' || assurance.currentLevel === 'aal2') return null;
-
-      const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
-      if (factorsError) throw factorsError;
-      const verifiedTotp = (factors?.totp || []).find((factor) => factor.status === 'verified');
-      if (!verifiedTotp) {
-        await supabase.auth.signOut();
-        throw new Error('This account requires multi-factor authentication, but no verified authenticator is available. Contact an administrator.');
-      }
-      return verifiedTotp.id;
-    }
-
-    function showMfaStep(factorId) {
-      mfaFactorId = factorId;
-      form.hidden = true;
-      mfaForm.hidden = false;
-      animateView(mfaForm);
-      setButtonState(loginSubmit, 'idle');
-      showStatus('Password accepted. Complete the second verification step.', 'info');
-      mfaCode.focus();
-    }
-
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       if (!form.reportValidity()) return;
@@ -314,52 +286,11 @@
           throw new Error('This account is not authorised for the Lawrence admin portal.');
         }
 
-        const requiredFactorId = await getRequiredMfaFactor();
-        if (requiredFactorId) {
-          showMfaStep(requiredFactorId);
-          return;
-        }
-
         await continueToDashboard(loginSubmit);
       } catch (error) {
         setButtonState(loginSubmit, 'idle');
         shakeCard();
         showStatus(error.message || 'Unable to sign in right now. Please try again.', 'error');
-      }
-    });
-
-    mfaForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      if (!mfaForm.reportValidity()) return;
-      if (!mfaFactorId) {
-        showStatus('The authenticator step expired. Sign in again to continue.', 'error');
-        shakeCard();
-        return;
-      }
-
-      try {
-        setButtonState(mfaSubmit, 'loading');
-        showStatus('Verifying authenticator code…', 'info');
-        const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: mfaFactorId });
-        if (challengeError) throw challengeError;
-
-        const { error: verifyError } = await supabase.auth.mfa.verify({
-          factorId: mfaFactorId,
-          challengeId: challenge.id,
-          code: mfaCode.value.trim()
-        });
-        if (verifyError) throw verifyError;
-
-        const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-        if (assuranceError) throw assuranceError;
-        if (assurance?.currentLevel !== 'aal2') throw new Error('Authenticator verification was not completed. Try a new code.');
-
-        await continueToDashboard(mfaSubmit);
-      } catch (error) {
-        setButtonState(mfaSubmit, 'idle');
-        mfaCode.select();
-        shakeCard();
-        showStatus(error.message || 'The code could not be verified. Check it and try again.', 'error');
       }
     });
 

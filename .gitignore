@@ -27,6 +27,10 @@ build/
 _local/
 _notes/
 
+# Internal planning documents
+plan.md
+*-plan.md
+
 # If you later add assets folders with raw originals, exclude them selectively if needed
 # assets/raw/
 # assets/uncompressed/

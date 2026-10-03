@@ -3,13 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gallery — Lawrence Senior High School</title>
-<meta name="description" content="Browse photo highlights from Lawrence Senior High School, Sunyani.">
+<title>Campus Gallery — Lawrence College &amp; SHS</title>
+<meta name="description" content="Browse photos of campus life and learning at Lawrence College &amp; SHS in Sunyani, Ghana.">
+<link rel="canonical" href="https://lawrencecollege.org/gallery.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Lawrence College &amp; SHS">
+<meta property="og:title" content="Campus Gallery — Lawrence College &amp; SHS">
+<meta property="og:description" content="Browse photos of campus life and learning at Lawrence College &amp; SHS in Sunyani, Ghana.">
+<meta property="og:url" content="https://lawrencecollege.org/gallery.html">
+<meta property="og:image" content="https://lawrencecollege.org/assets/campus.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Campus Gallery — Lawrence College &amp; SHS">
+<meta name="twitter:description" content="Browse photos of campus life and learning at Lawrence College &amp; SHS in Sunyani, Ghana.">
+<meta name="twitter:image" content="https://lawrencecollege.org/assets/campus.png">
 
 <link rel="icon" href="assets/lawrence-logo.png">
 <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
 <link rel="stylesheet" href="vendor/bootstrap-icons/bootstrap-icons.css">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=gallery-hero-20261003">
 </head>
 <body>
 
@@ -29,12 +40,10 @@
       </a>
       <a href="index.html">Home</a>
       <a href="about.html">About</a>
-      <a href="leadership.html">Leadership</a>
       <a href="programs.html">Programs</a>
       <a href="news.html">News</a>
       <a href="gallery.html" class="is-active">Gallery</a>
       <a href="contact.html">Contact</a>
-      <a href="admin/login.html">Admin Login</a>
     </nav>
 
     <div class="nav-actions">
@@ -50,26 +59,24 @@
   <nav>
     <a href="index.html">Home</a>
     <a href="about.html">About</a>
-    <a href="leadership.html">Leadership</a>
     <a href="programs.html">Programs</a>
     <a href="news.html">News</a>
     <a href="gallery.html">Gallery</a>
     <a href="contact.html">Contact</a>
     <a href="apply.html">Apply</a>
-    <a href="admin/login.html">Admin Login</a>
   </nav>
   <div class="mobile-cta">
     <a href="apply.html" class="btn-lawrence btn-lawrence-gold">Apply Now</a>
-    <a href="tel:+233257933174" class="btn-lawrence btn-lawrence-outline">Call the School</a>
+    <a href="tel:+233545856793" class="btn-lawrence btn-lawrence-outline">Call the School</a>
   </div>
 </div>
 
 <section class="gallery-hero">
-  <div class="hero-backdrop hero-backdrop--inner" aria-hidden="true"></div>
-  <div class="container-page hero-reveal-content">
+  <div class="hero-backdrop hero-backdrop--inner" data-cms-image aria-hidden="true"></div>
+  <div class="container-page hero-reveal-content" data-cms-section="hero">
     <p class="eyebrow">Gallery</p>
-    <h1 class="font-display text-white" style="font-size: clamp(2.4rem, 5vw, 4rem); max-width: 12ch;">Moments from campus life.</h1>
-    <p class="mt-3 text-white-50" style="max-width: 62ch;">Explore scenes from the Lawrence campus and the experiences that shape school life.</p>
+    <h1 class="font-display text-white" data-cms-title>Moments from campus life.</h1>
+    <p class="mt-3 text-white-50" data-cms-subtitle style="max-width: 62ch;">Explore scenes from the Lawrence campus and the experiences that shape school life.</p>
   </div>
 </section>
 
@@ -83,27 +90,7 @@
       <a href="apply.html" class="btn-lawrence btn-lawrence-outline-dark">Join the Community</a>
     </div>
 
-    <div class="gallery-grid">
-      <article class="gallery-card reveal">
-        <div class="gallery-placeholder">
-          <img src="assets/campus.png" alt="Lawrence campus grounds and garden">
-        </div>
-        <div class="caption">
-          <h3>Campus Grounds</h3>
-          <p>Lawrence campus in Sunyani.</p>
-        </div>
-      </article>
-
-      <article class="gallery-card reveal">
-        <div class="gallery-placeholder">
-          <img src="assets/hero.png" alt="Entrance to Lawrence Schools campus">
-        </div>
-        <div class="caption">
-          <h3>Campus Entrance</h3>
-          <p>The entrance to Lawrence Schools.</p>
-        </div>
-      </article>
-    </div>
+    <div id="galleryGrid" class="gallery-grid" aria-live="polite"></div>
   </div>
 </section>
 
@@ -134,7 +121,7 @@
           <p class="footer-intro">Building confident learners and future-ready citizens through practical education, discipline and care.</p>
           <address class="footer-contact">
             <span><i class="bi bi-geo-alt" aria-hidden="true"></i>Lawrence City (Angel City), Adjei Ano South (Dr Berko), Sunyani, Bono Region, Ghana</span>
-            <a href="https://wa.me/233257933174" target="_blank" rel="noopener noreferrer" aria-label="Message Lawrence on WhatsApp at +233 25 793 3174"><i class="bi bi-whatsapp" aria-hidden="true"></i>+233 25 793 3174</a>
+            <a href="https://wa.me/233545856793" target="_blank" rel="noopener noreferrer" aria-label="Message Lawrence on WhatsApp at +233 54 585 6793"><i class="bi bi-whatsapp" aria-hidden="true"></i>+233 54 585 6793</a>
           </address>
         </div>
         <nav class="footer-actions" aria-label="Admissions actions">
@@ -160,6 +147,7 @@
             <li><a href="apply.html">How to Apply</a></li>
             <li><a href="programs.html">Programs</a></li>
             <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="admin/login.html">Staff Login</a></li>
           </ul>
         </div>
         <div>
@@ -171,6 +159,8 @@
           <p class="footer-social-label">Follow Lawrence</p>
           <div class="social-row">
             <a href="https://www.linkedin.com/in/lawrence-college-a5b45743b/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+            <a href="https://www.tiktok.com/@lawrencecollege0" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
+            <a href="https://www.instagram.com/college.lawrence/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
           </div>
         </div>
       </div>
@@ -186,6 +176,105 @@
 </footer>
 
 <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
+  window.lawrenceSupabase = createClient(
+    'https://ttjgkfsrkxpxeufkikma.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0amdrZnNya3hweGV1Zmtpa21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3ODAxOTYsImV4cCI6MjEwNjM1NjE5Nn0.WeSQ17D0rjM_Jxltvy1X4sjeFG7lRtRDPUjcUdaw8Uk'
+  );
+</script>
+<script type="module">
+  (() => {
+    const client = window.lawrenceSupabase || null;
+    const grid = document.getElementById('galleryGrid');
+    if (!grid) return;
+
+    const fallbackItems = [
+      { title: 'Campus Grounds', caption: 'Lawrence campus in Sunyani.', image_url: 'assets/campus.png' },
+      { title: 'Campus Entrance', caption: 'The entrance to Lawrence Schools.', image_url: 'assets/hero.png' }
+    ];
+    const imageRatios = { 'gallery-4x3': '4 / 3', 'portrait-3x4': '3 / 4', 'square-1x1': '1 / 1' };
+
+    const makeCard = (item, index) => {
+      const article = document.createElement('article');
+      article.className = 'gallery-card';
+
+      const placeholder = document.createElement('div');
+      placeholder.className = 'gallery-placeholder';
+      if (imageRatios[item.image_template]) {
+        placeholder.style.aspectRatio = imageRatios[item.image_template];
+        placeholder.style.minHeight = '0';
+      }
+
+      const img = document.createElement('img');
+      img.src = item.image_url || 'assets/campus.png';
+      img.alt = item.title || 'Gallery image';
+      img.loading = index === 0 ? 'eager' : 'lazy';
+      img.style.objectFit = item.image_fit === 'contain' ? 'contain' : 'cover';
+      img.style.objectPosition = `${item.image_position_x ?? 50}% ${item.image_position_y ?? 50}%`;
+      img.style.transform = `scale(${(item.image_zoom_x ?? 100) / 100}, ${(item.image_zoom_y ?? 100) / 100})`;
+      img.onerror = () => {
+        img.src = 'assets/campus.png';
+      };
+      placeholder.appendChild(img);
+
+      const caption = document.createElement('div');
+      caption.className = 'caption';
+
+      const h3 = document.createElement('h3');
+      h3.textContent = item.title || 'Gallery item';
+
+      const p = document.createElement('p');
+      p.textContent = item.caption || '';
+
+      caption.append(h3, p);
+      article.append(placeholder, caption);
+      return article;
+    };
+
+    async function loadGallery() {
+      let items = [...fallbackItems];
+
+      if (client) {
+        const { data, error } = await client
+          .from('gallery_items')
+          .select('*')
+          .eq('is_published', true)
+          .order('display_order', { ascending: true })
+          .order('created_at', { ascending: false });
+
+        if (!error && Array.isArray(data) && data.length) {
+          items = data.map((item) => ({
+            title: item.title || 'Gallery item',
+            caption: item.caption || '',
+            image_url: item.image_url || 'assets/campus.png',
+            image_template: item.image_template || 'gallery-4x3',
+            image_fit: item.image_fit || 'cover',
+            image_zoom_x: item.image_zoom_x ?? 100,
+            image_zoom_y: item.image_zoom_y ?? 100,
+            image_position_x: item.image_position_x ?? 50,
+            image_position_y: item.image_position_y ?? 50
+          }));
+        }
+      }
+
+      if (!items.length) {
+        grid.innerHTML = '<p class="text-secondary">No gallery images have been published yet.</p>';
+        return;
+      }
+
+      grid.innerHTML = '';
+      items.forEach((item, index) => {
+        grid.appendChild(makeCard(item, index));
+      });
+    }
+
+    loadGallery().catch(() => {
+      grid.innerHTML = '<p class="text-secondary">Gallery could not be loaded right now.</p>';
+    });
+  })();
+</script>
+<script type="module" src="js/site-sections.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

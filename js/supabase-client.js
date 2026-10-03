@@ -1,11 +1,11 @@
-const SUPABASE_URL = 'https://ttjgkfsrkxpxeufkikma.supabase.co';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
+
+export const SUPABASE_URL = 'https://ttjgkfsrkxpxeufkikma.supabase.co';
+export const SITE_MEDIA_BUCKET = 'site-media';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0amdrZnNya3hweGV1Zmtpa21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3ODAxOTYsImV4cCI6MjEwNjM1NjE5Nn0.WeSQ17D0rjM_Jxltvy1X4sjeFG7lRtRDPUjcUdaw8Uk';
 
-export const supabase = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) || null;
-
-if (!supabase) {
-  console.warn('Supabase client was not loaded. Add the Supabase CDN script before this file.');
-}
+export const supabase = window.lawrenceSupabase || createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+window.lawrenceSupabase = supabase;
 
 export async function signIn(email, password) {
   if (!supabase) throw new Error('Supabase not configured');
