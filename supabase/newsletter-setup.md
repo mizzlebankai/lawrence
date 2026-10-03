@@ -1,6 +1,6 @@
 # Newsletter go-live setup
 
-The public signup, double opt-in, unsubscribe page, admin campaign composer, and batched Brevo sender are prepared. Signup confirmation requests are throttled by hashed IP and email buckets. Email delivery stays disabled until the Supabase function is deployed with the required secrets and a verified sender.
+The public signup, double opt-in, unsubscribe page, branded newsletter composer, private document attachments, and batched Brevo sender are prepared. Signup confirmation requests are throttled by hashed IP and email buckets.
 
 The Brevo branded-link subdomain is optional. Skip it for now unless Lawrence controls the domain and its DNS; do not connect a student or third-party domain to brand Lawrence messages.
 
@@ -10,7 +10,7 @@ Create the Brevo account with an email address you control. Before sending to th
 
 ## 2. Apply the database schema
 
-Run the current `schema.sql` in the Supabase SQL Editor. It is rerunnable and adds double-opt-in state, campaign/delivery tables, admin read policies, and service-only batch claim functions. Existing active subscribers with consent are retained and marked as already confirmed.
+For a new project, run the current `schema.sql` in the Supabase SQL Editor. For an existing project, apply the relevant migrations, including `20261003152000_applicant_email_verification.sql` for applicant email verification and segmented campaign audiences. This migration disables direct public inserts into applications; the Edge Function now creates applications and sends verification links. The application-documents bucket remains private: applicants may upload, while reads and deletes are admin-only. The newsletter-attachments bucket is private and admin-only; the Edge Function accesses both through the service role.
 
 ## 3. Deploy the Edge Function
 
@@ -22,7 +22,7 @@ supabase link --project-ref ttjgkfsrkxpxeufkikma
 supabase functions deploy newsletter
 ```
 
-JWT verification is enabled in `config.toml`. The public site invokes the function using its public anon key; campaign actions additionally require a signed-in active admin.
+JWT verification is disabled in `config.toml` so public signup, confirmation, unsubscribe, application submission, and email-verification requests can invoke the function. Admin campaign actions independently validate the caller's Supabase access token and active-admin status.
 
 ## 4. Configure function secrets
 
@@ -31,8 +31,8 @@ Set these through Supabase Dashboard > Edge Functions > Secrets, or with the Sup
 - `BREVO_API_KEY`: Brevo API key.
 - `BREVO_SENDER_EMAIL`: sender address verified in Brevo.
 - `BREVO_SENDER_NAME`: for example, `Lawrence College & SHS`.
-- `PUBLIC_SITE_URL`: public HTTPS origin, with no trailing slash.
-- `ALLOWED_ORIGINS`: comma-separated exact origins, for example `https://lawrence.example,http://localhost:8000`.
+- `PUBLIC_SITE_URL`: public HTTPS origin, with no trailing slash. Production: `https://lawrencecollege.org`.
+- `ALLOWED_ORIGINS`: comma-separated additional exact origins for local development, for example `http://localhost:8000,http://127.0.0.1:8000`. `PUBLIC_SITE_URL` is always allowed automatically.
 - `NEWSLETTER_TOKEN_SECRET`: a private random value at least 32 characters long. Generate it locally and keep it only in Supabase secrets.
 - `NEWSLETTER_LIVE_SENDS`: set to `false` during setup. This is the default; it blocks campaign batches while still allowing one-address test sends.
 
@@ -40,12 +40,14 @@ Supabase provides `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROL
 
 ## 5. Test before launch
 
-1. Submit a signup with an address you control. It should remain `pending_confirmation` until the confirmation button is clicked.
-2. Confirm the address and verify the admin subscriber view shows it as active.
-3. Save a campaign draft and send a test message only to an internal address.
-4. Keep `NEWSLETTER_LIVE_SENDS=false` while you verify the test email, confirmation, unsubscribe, sender identity, and content.
-5. Only after sender-domain authorization and review, deliberately set `NEWSLETTER_LIVE_SENDS=true` in Supabase Function Secrets and redeploy/restart the function if Supabase requires it.
-6. Send first to a small confirmed audience. Each admin action sends one batch of up to 10 and can be resumed from Campaign history.
-7. Click the unsubscribe link and confirm that address is excluded from later campaigns.
+1. Submit a newsletter signup with an address you control. It should remain `pending_confirmation` until the confirmation button is clicked.
+2. Submit an admission application with an address you control. The application is saved immediately, but status-update campaigns must exclude it until the applicant verifies the email link.
+3. Confirm the newsletter address and verify the admin subscriber view shows it as active.
+4. Compose a campaign and choose Newsletter subscribers or Admission applicants. Subscriber campaigns can target interest groups; applicant campaigns can target programme and application status. Only confirmed subscribers or email-verified applicants are eligible.
+5. Use the subject, headline, plain-text message, optional HTTPS image, and optional call-to-action button. Upload a JPG, PNG, or WebP image or use an image URL.
+6. Optionally attach PDF, Word, PowerPoint, Excel, TXT, or CSV documents (up to 5 MB each and 8 MB total).
+7. Save the draft, review the preview, and send a test message to an internal address. Check the layout on desktop and mobile, image visibility, attachments, links, sender identity, and spam folder.
+8. Test confirmation, unsubscribe, and applicant email-verification links. Applicants are kept separate from newsletter marketing subscribers.
+9. Start with a small audience and verify provider delivery in Brevo. Each admin action sends one batch of up to 10 and can be resumed from Campaign history.
 
-Campaigns only include active, consented, confirmed subscribers. The function records per-recipient delivery status and includes unsubscribe links in both HTML and plain-text email.
+Campaigns use a Lawrence-branded responsive HTML layout with a plain-text alternative. Documents are attached to the messages; campaign image URLs must use HTTPS. The function records per-recipient delivery status. Newsletter messages include an unsubscribe link; applicant messages are limited to verified addresses and admissions-related communication.
